@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2025 Johannes Elsing
  *
  * Licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
@@ -23,7 +23,14 @@ void initWindow(VkContext& context, AppConfig& config)
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	context.window = glfwCreateWindow(config.width, config.height, config.title.c_str(), nullptr, nullptr);
+	context.window = glfwCreateWindow(
+		config.width,
+		config.height,
+		config.title.c_str(),
+		nullptr,
+		nullptr
+	);
+	glfwShowWindow(context.window);
 
 	if (!context.window) throw std::runtime_error("Failed to create window!");
 }

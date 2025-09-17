@@ -20,13 +20,13 @@ struct VkContext {
 	vk::SwapchainKHR swapchain = nullptr;
 	vk::SurfaceKHR surface     = nullptr;
 
-	std::vector<vk::ImageView> swapchain_image_views;
-	std::vector<vk::Image>     swapchain_images;
-	std::vector<vk::Semaphore> recycled_semaphores;
+	std::vector<vk::ImageView> swapChainImageViews;
+	std::vector<vk::Image>     swapChainImages;
+	std::vector<vk::Semaphore> recycledSemaphores;
 
 	vk::Pipeline               pipeline        = nullptr;
-	vk::PipelineLayout         pipeline_layout = nullptr;
-	vk::DebugUtilsMessengerEXT debug_callback  = nullptr;
+	vk::PipelineLayout         pipelineLayout  = nullptr;
+	vk::DebugUtilsMessengerEXT debugCallback   = nullptr;
 	GLFWwindow*                window          = nullptr;
 };
 

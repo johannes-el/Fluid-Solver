@@ -16,6 +16,7 @@
 
 void createSwapchain(VkContext& context)
 {
+	/*
 	auto surfaceCapabilities = context.gpu.getSurfaceCapabilitiesKHR(context.surface);
 	context.swapChainSurfaceFormat = chooseSwapSurfaceFormat(context.gpu.getSurfaceFormatsKHR(context.surface));
 	context.swapChainExtent = chooseSwapExtent(context, surfaceCapabilities);
@@ -45,6 +46,7 @@ void createSwapchain(VkContext& context)
 		.clipped = true,
 		.oldSwapchain = nullptr
 	};
+	*/
 
 	// uint32_t queueFamilyIndices[] = {context.graphicsQueue, context.presentQueue};
 }

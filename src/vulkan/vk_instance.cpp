@@ -58,7 +58,7 @@ void setupValidationLayers(VkContext& vkContext)
 
 	if (result != VK_SUCCESS) throw std::runtime_error("Failed to create debug messenger");
 
-	vkContext.debug_callback = messenger;
+	vkContext.debugCallback = messenger;
 }
 
 void createInstance(VkContext& vkContext)
@@ -77,7 +77,7 @@ void createInstance(VkContext& vkContext)
 
 	std::vector<const char*> requiredExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 	if (enableValidationLayers) {
-		requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		requiredExtensions.push_back(vk::EXTDebugUtilsExtensionName);
 	}
 
 	std::vector<const char*> requiredLayers;
