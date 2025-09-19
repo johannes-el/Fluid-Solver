@@ -46,41 +46,79 @@ void pickPhysicalDevice(VkContext& vkContext)
 	vkContext.gpu = candidates.rbegin()->second;
 }
 
-uint32_t findGraphicsQueueFamily(vk::PhysicalDevice device)
+void createDevice(VkContext& context)
 {
-	auto queueFamilies = device.getQueueFamilyProperties();
-	auto it = std::find_if(queueFamilies.begin(), queueFamilies.end(),
-			[](vk::QueueFamilyProperties const& qfp) {
-				return qfp.queueFlags & vk::QueueFlagBits::eGraphics;
-			});
-	if (it == queueFamilies.end())
-		throw std::runtime_error("No graphics queue found!");
-	return static_cast<uint32_t>(std::distance(queueFamilies.begin(), it));
-}
+	std::vector<vk::QueueFamilyProperties> queueFamilyProperties = context.gpu.getQueueFamilyProperties();
 
-vk::Device createDevice(VkContext& vkContext)
-{
-	uint32_t graphicsQueueFamily = findGraphicsQueueFamily(vkContext.gpu);
+	auto graphicsQueueFamilyProperty = std::ranges::find_if(
+		queueFamilyProperties,
+		[]( auto const & qfp )
+		{ return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != static_cast<vk::QueueFlags>(0); }
+	);
 
-	float queuePriority = 1.0f;
-	vk::DeviceQueueCreateInfo queueCreateInfo {
-		.queueFamilyIndex = graphicsQueueFamily,
-		.queueCount       = 1,
+	auto graphicsIndex = static_cast<uint32_t>(
+		std::distance( queueFamilyProperties.begin(), graphicsQueueFamilyProperty)
+	);
+
+	// determine a queueFamilyIndex that supports present
+	// first check if the graphicsIndex is good enough
+	auto presentIndex = context.gpu.getSurfaceSupportKHR( graphicsIndex, context.surface )
+		? graphicsIndex
+		: static_cast<uint32_t>(queueFamilyProperties.size());
+
+	if (presentIndex == queueFamilyProperties.size()) {
+		for ( size_t i = 0; i < queueFamilyProperties.size(); i++ )
+		{
+			if ((queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) &&
+				context.gpu.getSurfaceSupportKHR( static_cast<uint32_t>(i), context.surface )) {
+				graphicsIndex = static_cast<uint32_t>( i );
+				presentIndex  = graphicsIndex;
+				break;
+			}
+		}
+
+		if (presentIndex == queueFamilyProperties.size()) {
+			for (size_t i = 0; i < queueFamilyProperties.size(); i++) {
+				if (context.gpu.getSurfaceSupportKHR( static_cast<uint32_t>(i),
+									context.surface)) {
+					presentIndex = static_cast<uint32_t>(i);
+					break;
+				}
+			}
+		}
+	}
+	if ((graphicsIndex == queueFamilyProperties.size()) || (presentIndex == queueFamilyProperties.size())) {
+		throw std::runtime_error( "Could not find a queue for graphics or present -> terminating" );
+	}
+
+	auto features = context.gpu.getFeatures2();
+	vk::PhysicalDeviceVulkan13Features vulkan13Features;
+	vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures;
+	vulkan13Features.dynamicRendering = vk::True;
+	extendedDynamicStateFeatures.extendedDynamicState = vk::True;
+	vulkan13Features.pNext = &extendedDynamicStateFeatures;
+	features.pNext = &vulkan13Features;
+
+	float                     queuePriority = 0.0f;
+	vk::DeviceQueueCreateInfo deviceQueueCreateInfo {
+		.queueFamilyIndex = graphicsIndex,
+		.queueCount = 1,
 		.pQueuePriorities = &queuePriority
 	};
 
-	vk::PhysicalDeviceFeatures deviceFeatures{};
-
-	vk::DeviceCreateInfo createInfo {
-		.queueCreateInfoCount    = 1,
-		.pQueueCreateInfos       = &queueCreateInfo,
-		.enabledExtensionCount   = static_cast<uint32_t>(deviceExtensions.size()),
-		.ppEnabledExtensionNames = deviceExtensions.data(),
-		.pEnabledFeatures        = &deviceFeatures
+	vk::DeviceCreateInfo      deviceCreateInfo{
+		.pNext =  &features,
+		.queueCreateInfoCount = 1,
+		.pQueueCreateInfos = &deviceQueueCreateInfo
 	};
 
-	vkContext.device = vkContext.gpu.createDevice(createInfo);
-	vkContext.queue  = vkContext.device.getQueue(graphicsQueueFamily, 0);
+	deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-	return vkContext.device;
+	context.graphicsFamily = graphicsIndex;
+	context.presentFamily  = presentIndex;
+
+	context.device = context.gpu.createDevice(deviceCreateInfo);
+	context.graphicsQueue = context.device.getQueue(graphicsIndex, 0);
+	context.presentQueue = context.device.getQueue(presentIndex, 0);
 }

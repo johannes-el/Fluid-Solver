@@ -22,6 +22,20 @@
 #include <vulkan/vulkan.hpp>
 #include <iostream>
 
+void createSurface(VkContext& context)
+{
+	VkSurfaceKHR _surface;
+	if (glfwCreateWindowSurface(
+			context.instance,
+			context.window,
+			nullptr,
+			&_surface) != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create window surface!");
+	}
+	context.surface = vk::SurfaceKHR(_surface);
+}
+
 vk::Bool32 debugCallback(
 	vk::DebugUtilsMessageSeverityFlagBitsEXT	messageSeverity,
 	vk::DebugUtilsMessageTypeFlagsEXT               messageType,

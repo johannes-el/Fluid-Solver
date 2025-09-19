@@ -11,8 +11,8 @@
 
 #include "vk_context.hpp"
 
-void createSwapchain(VkContext& context);
-void recreateSwapchain(VkContext& context);
+void createSwapChain(VkContext& context);
+void recreateSwapChain(VkContext& context);
 void cleanupSwapchain(VkContext& context);
 
 void get_queue_family_index(std::vector<vk::QueueFamilyProperties> const &queue_family_properties, vk::QueueFlagBits queue_flag);

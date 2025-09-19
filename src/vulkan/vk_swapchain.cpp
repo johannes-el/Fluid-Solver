@@ -14,12 +14,14 @@
 
 #include "vulkan/vk_swapchain.hpp"
 
-void createSwapchain(VkContext& context)
+void createSwapChain(VkContext& context)
 {
-	/*
 	auto surfaceCapabilities = context.gpu.getSurfaceCapabilitiesKHR(context.surface);
-	context.swapChainSurfaceFormat = chooseSwapSurfaceFormat(context.gpu.getSurfaceFormatsKHR(context.surface));
 	context.swapChainExtent = chooseSwapExtent(context, surfaceCapabilities);
+	context.swapChainSurfaceFormat = chooseSwapSurfaceFormat(
+		context.gpu.getSurfaceFormatsKHR(context.surface)
+	);
+
 	auto minImageCount = std::max(3u, surfaceCapabilities.minImageCount);
 	minImageCount = (surfaceCapabilities.maxImageCount > 0 && minImageCount > surfaceCapabilities.maxImageCount)
 		? surfaceCapabilities.maxImageCount
@@ -30,33 +32,53 @@ void createSwapchain(VkContext& context)
 		imageCount = surfaceCapabilities.maxImageCount;
 	}
 
+	std::vector<vk::SurfaceFormatKHR> availableFormats = context.gpu.getSurfaceFormatsKHR(context.surface);
+	std::vector<vk::PresentModeKHR> availablePresentModes = context.gpu.getSurfacePresentModesKHR(context.surface);
+
+	vk::PresentModeKHR presentMode = chooseSwapPresentMode(availablePresentModes);
+
 	vk::SwapchainCreateInfoKHR swapChainCreateInfo {
-		.flags = vk::SwapchainCreateFlagsKHR(),
 		.surface = context.surface,
-		.minImageCount = minImageCount,
+		.minImageCount = imageCount,
 		.imageFormat = context.swapChainSurfaceFormat.format,
 		.imageColorSpace = context.swapChainSurfaceFormat.colorSpace,
 		.imageExtent = context.swapChainExtent,
 		.imageArrayLayers = 1,
 		.imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
-		.imageSharingMode = vk::SharingMode::eExclusive,
 		.preTransform = surfaceCapabilities.currentTransform,
 		.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
-		.presentMode = chooseSwapPresentMode(context.gpu.getSurfacePresentModesKHR(context.surface)),
-		.clipped = true,
+		.presentMode = presentMode,
+		.clipped = VK_TRUE,
 		.oldSwapchain = nullptr
 	};
-	*/
 
-	// uint32_t queueFamilyIndices[] = {context.graphicsQueue, context.presentQueue};
+	if (!context.graphicsFamily.has_value() || !context.presentFamily.has_value()) {
+		throw std::runtime_error("Missing required queue family indices!");
+	}
+
+	// Decide on sharing mode
+	uint32_t queueFamilyIndices[] = {context.graphicsFamily.value(), context.presentFamily.value()};
+	if (context.graphicsFamily != context.presentFamily) {
+		swapChainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
+		swapChainCreateInfo.queueFamilyIndexCount = 2;
+		swapChainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+	} else {
+		swapChainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
+	}
+
+	// Create the swapchain
+	context.swapChain = context.device.createSwapchainKHR(swapChainCreateInfo);
+
+	// Store chosen image format for later use
+	context.swapChainImageFormat = context.swapChainSurfaceFormat.format;
 }
 
-void recreateSwapchain(VkContext& context)
+void recreateSwapChain(VkContext& context)
 {
 	context.device.waitIdle();
 	VkSurfaceCapabilitiesKHR surface_properties;
 
-	createSwapchain(context);
+	createSwapChain(context);
 	// createImageViews();
 }
 

@@ -17,7 +17,13 @@ void createImageViews(VkContext& context)
 	vk::ImageViewCreateInfo imageViewCreateInfo {
 		.viewType = vk::ImageViewType::e2D,
 		.format = context.swapChainImageFormat,
-		.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+		.subresourceRange = {
+			.aspectMask = vk::ImageAspectFlagBits::eColor,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
 	};
 
 	for (auto image : context.swapChainImages)

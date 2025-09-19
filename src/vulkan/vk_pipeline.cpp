@@ -34,13 +34,60 @@ void createGraphicsPipeline(VkContext& context)
 		.pName = "vertMain",
 	};
 
+	vk::PipelineShaderStageCreateInfo fragShaderStageInfo {
+		.stage = vk::ShaderStageFlagBits::eFragment,
+		.module = shaderModule,
+		.pName = "fragMain"
+	};
+
+	vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
 	vk::PipelineDynamicStateCreateInfo dynamicState {
 		.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
 		.pDynamicStates = dynamicStates.data()
 	};
 
-	/*
-	vk::GraphicsPipelineCreateInfo pipelineInfo{ .pNext = &pipelineRenderingCreateInfo,
+	vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+	vk::PipelineInputAssemblyStateCreateInfo inputAssembly {
+		.topology = vk::PrimitiveTopology::eTriangleList
+	};
+
+	vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo {
+		.colorAttachmentCount = 1,
+		.pColorAttachmentFormats = &context.swapChainImageFormat
+	};
+
+	vk::PipelineViewportStateCreateInfo viewportState({}, {}, {}, 1);
+
+	vk::PipelineRasterizationStateCreateInfo rasterizer({}, {}, {}, vk::False);
+
+	vk::PipelineMultisampleStateCreateInfo multisampling {
+		.rasterizationSamples = vk::SampleCountFlagBits::e1,
+		.sampleShadingEnable = vk::False,
+	};
+
+	vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+	colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR
+		| vk::ColorComponentFlagBits::eG
+		| vk::ColorComponentFlagBits::eB
+		| vk::ColorComponentFlagBits::eA;
+
+	vk::PipelineColorBlendStateCreateInfo colorBlending {
+		.logicOpEnable = vk::False,
+		.logicOp = vk::LogicOp::eCopy,
+		.attachmentCount = 1,
+		.pAttachments = &colorBlendAttachment
+	};
+
+	vk::PipelineLayoutCreateInfo pipelineLayoutInfo {
+		.setLayoutCount = 0,
+		.pushConstantRangeCount = 0
+	};
+
+	// context.pipelineLayout = vk::PipelineLayout(context.device, pipelineLayoutInfo);
+
+	vk::GraphicsPipelineCreateInfo pipelineInfo {
+		.pNext = &pipelineRenderingCreateInfo,
 		.stageCount = 2,
 		.pStages = shaderStages,
 		.pVertexInputState = &vertexInputInfo,
@@ -50,9 +97,8 @@ void createGraphicsPipeline(VkContext& context)
 		.pMultisampleState = &multisampling,
 		.pColorBlendState = &colorBlending,
 		.pDynamicState = &dynamicState,
-		.layout = pipelineLayout,
+		.layout = context.pipelineLayout,
 		.renderPass = nullptr
 	};
-	*/
 }
 

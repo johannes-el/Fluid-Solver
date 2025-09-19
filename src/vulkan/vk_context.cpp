@@ -14,6 +14,9 @@
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_instance.hpp"
 #include "vulkan/vk_device.hpp"
+#include "vulkan/vk_swapchain.hpp"
+#include "vulkan/vk_pipeline.hpp"
+
 #include <vulkan/vulkan_handles.hpp>
 
 void initWindow(VkContext& context, AppConfig& config)
@@ -40,18 +43,9 @@ void initVulkan(VkContext& context)
 	createInstance(context);
 	setupValidationLayers(context);
 	pickPhysicalDevice(context);
+	createSurface(context);
 	createDevice(context);
-
-	VkSurfaceKHR _surface;
-	if (glfwCreateWindowSurface(
-			context.instance,
-			context.window,
-			nullptr,
-			&_surface) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create window surface!");
-	}
-	context.surface = vk::SurfaceKHR(_surface);
+	createSwapChain(context);
 }
 
 void run(VkContext& context)
@@ -59,10 +53,19 @@ void run(VkContext& context)
 	while (!glfwWindowShouldClose(context.window)) {
 		glfwPollEvents();
 	}
+	context.device.waitIdle();
 }
 
 void cleanup(VkContext& context)
 {
+	context.device.destroySwapchainKHR(context.swapChain);
+	for (auto &imageView : context.swapChainImageViews) {
+		context.device.destroyImageView(imageView);
+	}
+	context.device.destroy(context.pipeline);
+	context.device.destroy();
+	context.instance.destroySurfaceKHR(context.surface);
+
 	glfwDestroyWindow(context.window);
 	glfwTerminate();
 }

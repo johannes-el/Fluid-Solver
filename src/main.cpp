@@ -66,4 +66,8 @@ int main(int argc, char** argv)
 	VkContext context{};
 	initWindow(context, config);
 	initVulkan(context);
+
+	run(context);
+
+	cleanup(context);
 }

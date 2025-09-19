@@ -16,11 +16,19 @@ struct VkContext {
 	vk::Instance instance      = nullptr;
 	vk::PhysicalDevice gpu     = nullptr;
 	vk::Device device          = nullptr;
-	vk::Queue queue            = nullptr;
-	vk::SwapchainKHR swapchain = nullptr;
+	vk::Queue graphicsQueue    = nullptr;
+	vk::Queue presentQueue     = nullptr;
+	vk::SwapchainKHR swapChain = nullptr;
 	vk::SurfaceKHR surface     = nullptr;
 
+	vk::SurfaceFormatKHR swapChainSurfaceFormat;
+	vk::Extent2D swapChainExtent;
+
+	std::optional<uint32_t> graphicsFamily;
+	std::optional<uint32_t> presentFamily;
+
 	std::vector<vk::ImageView> swapChainImageViews;
+	vk::Format                 swapChainImageFormat = vk::Format::eUndefined;
 	std::vector<vk::Image>     swapChainImages;
 	std::vector<vk::Semaphore> recycledSemaphores;
 

@@ -13,11 +13,14 @@ find_package(Vulkan REQUIRED)
 
 add_executable(VulkanApp
     src/main.cpp
+    src/FileIO.cpp
 
     # Vulkan source files
     src/vulkan/vk_context.cpp
     src/vulkan/vk_instance.cpp
     src/vulkan/vk_device.cpp
+    src/vulkan/vk_swapchain.cpp
+    src/vulkan/vk_pipeline.cpp
 )
 
 target_include_directories(VulkanApp PRIVATE ${Vulkan_INCLUDE_DIRS})
