@@ -16,11 +16,13 @@
 #include "vulkan/vk_device.hpp"
 #include "vulkan/vk_swapchain.hpp"
 #include "vulkan/vk_pipeline.hpp"
+#include "vulkan/vk_image.hpp"
+#include "vulkan/vk_command.hpp"
+#include "vulkan/vk_sync.hpp"
 
 #include <vulkan/vulkan_handles.hpp>
 
-void initWindow(VkContext& context, AppConfig& config)
-{
+void initWindow(VkContext& context, AppConfig& config){
 	if (!glfwInit()) throw std::runtime_error("Failed to initialize GLFW!");
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -46,12 +48,24 @@ void initVulkan(VkContext& context)
 	createSurface(context);
 	createDevice(context);
 	createSwapChain(context);
+	createImageViews(context);
+	createGraphicsPipeline(context);
+	createCommandPool(context);
+	createCommandBuffer(context);
+	createSyncObjects(context);
+}
+
+void drawFrame(VkContext& context)
+{
+
+	context.currentFrame = (context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void run(VkContext& context)
 {
 	while (!glfwWindowShouldClose(context.window)) {
 		glfwPollEvents();
+		drawFrame(context);
 	}
 	context.device.waitIdle();
 }
@@ -62,7 +76,7 @@ void cleanup(VkContext& context)
 	for (auto &imageView : context.swapChainImageViews) {
 		context.device.destroyImageView(imageView);
 	}
-	context.device.destroy(context.pipeline);
+	context.device.destroy(context.graphicsPipeline);
 	context.device.destroy();
 	context.instance.destroySurfaceKHR(context.surface);
 

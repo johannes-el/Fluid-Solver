@@ -92,12 +92,18 @@ void createDevice(VkContext& context)
 	}
 
 	auto features = context.gpu.getFeatures2();
-	vk::PhysicalDeviceVulkan13Features vulkan13Features;
-	vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures;
+
+	vk::PhysicalDeviceVulkan11Features vulkan11Features{};
+	vk::PhysicalDeviceVulkan13Features vulkan13Features{};
+	vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
+
+	vulkan11Features.shaderDrawParameters = vk::True;
 	vulkan13Features.dynamicRendering = vk::True;
 	extendedDynamicStateFeatures.extendedDynamicState = vk::True;
+
 	vulkan13Features.pNext = &extendedDynamicStateFeatures;
-	features.pNext = &vulkan13Features;
+	vulkan11Features.pNext = &vulkan13Features;
+	features.pNext = &vulkan11Features;
 
 	float                     queuePriority = 0.0f;
 	vk::DeviceQueueCreateInfo deviceQueueCreateInfo {

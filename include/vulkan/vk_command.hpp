@@ -9,19 +9,8 @@
 
 #pragma once
 
-// === Standard Library === //
-#include <iostream>
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <memory>
-#include <optional>
-#include <filesystem>
-#include <fstream>
-#include <map>
-#include <utility>
+#include "vk_context.hpp"
 
-// === Third-party Libraries === //
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
-#include <GLFW/glfw3.h>
+void createCommandPool(VkContext& context);
+void createCommandBuffer(VkContext& context);
+void recordCommandBuffer(VkContext& context, uint32_t imageIndex);

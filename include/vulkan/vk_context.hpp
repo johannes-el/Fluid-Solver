@@ -12,6 +12,8 @@
 #include "includes.hpp"
 #include "app_config.hpp"
 
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
 struct VkContext {
 	vk::Instance instance      = nullptr;
 	vk::PhysicalDevice gpu     = nullptr;
@@ -32,13 +34,23 @@ struct VkContext {
 	std::vector<vk::Image>     swapChainImages;
 	std::vector<vk::Semaphore> recycledSemaphores;
 
-	vk::Pipeline               pipeline        = nullptr;
-	vk::PipelineLayout         pipelineLayout  = nullptr;
-	vk::DebugUtilsMessengerEXT debugCallback   = nullptr;
-	GLFWwindow*                window          = nullptr;
+	vk::Pipeline               graphicsPipeline = nullptr;
+	vk::PipelineLayout         pipelineLayout   = nullptr;
+	vk::DebugUtilsMessengerEXT debugCallback    = nullptr;
+
+	vk::CommandPool commandPool = nullptr;
+	vk::CommandBuffer commandBuffer = nullptr;
+
+	vk::Semaphore presentCompleteSemaphore = nullptr;
+	vk::Semaphore renderFinishedSemaphore  = nullptr;
+	vk::Fence drawFence                    = nullptr;
+
+	GLFWwindow*                window           = nullptr;
+	uint32_t currentFrame = 0;
 };
 
 void initWindow(VkContext& context, AppConfig& config);
 void initVulkan(VkContext& context);
+void drawFrame(VkContext& context);
 void run(VkContext& context);
 void cleanup(VkContext& context);

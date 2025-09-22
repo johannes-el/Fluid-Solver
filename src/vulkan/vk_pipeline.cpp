@@ -20,24 +20,23 @@ static std::vector<vk::DynamicState> dynamicStates = {
 	createInfo.codeSize = code.size() * sizeof(char);
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-	vk::ShaderModule shaderModule{};
-
-	return shaderModule;
+	return context.device.createShaderModule(createInfo);
 }
 void createGraphicsPipeline(VkContext& context)
 {
-	vk::ShaderModule shaderModule = createShaderModule(context, readFile("./../shaders/vert.spv"));
+	vk::ShaderModule vertModule = createShaderModule(context, readFile("./../shaders/vert.spv"));
+	vk::ShaderModule fragModule = createShaderModule(context, readFile("./../shaders/frag.spv"));
 
 	vk::PipelineShaderStageCreateInfo vertShaderStageInfo {
 		.stage = vk::ShaderStageFlagBits::eVertex,
-		.module = shaderModule,
-		.pName = "vertMain",
+		.module = vertModule,
+		.pName = "main",
 	};
 
 	vk::PipelineShaderStageCreateInfo fragShaderStageInfo {
 		.stage = vk::ShaderStageFlagBits::eFragment,
-		.module = shaderModule,
-		.pName = "fragMain"
+		.module = fragModule,
+		.pName = "main"
 	};
 
 	vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
@@ -57,9 +56,18 @@ void createGraphicsPipeline(VkContext& context)
 		.pColorAttachmentFormats = &context.swapChainImageFormat
 	};
 
-	vk::PipelineViewportStateCreateInfo viewportState({}, {}, {}, 1);
+	vk::PipelineViewportStateCreateInfo viewportState = vk::PipelineViewportStateCreateInfo{}
+		.setViewportCount(1)
+		.setScissorCount(1);
 
-	vk::PipelineRasterizationStateCreateInfo rasterizer({}, {}, {}, vk::False);
+	vk::PipelineRasterizationStateCreateInfo rasterizer{};
+	rasterizer.depthClampEnable = VK_FALSE;
+	rasterizer.rasterizerDiscardEnable = VK_FALSE;
+	rasterizer.polygonMode = vk::PolygonMode::eFill;
+	rasterizer.lineWidth = 1.0f;
+	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
+	rasterizer.frontFace = vk::FrontFace::eClockwise;
+	rasterizer.depthBiasEnable = VK_FALSE;
 
 	vk::PipelineMultisampleStateCreateInfo multisampling {
 		.rasterizationSamples = vk::SampleCountFlagBits::e1,
@@ -84,7 +92,7 @@ void createGraphicsPipeline(VkContext& context)
 		.pushConstantRangeCount = 0
 	};
 
-	// context.pipelineLayout = vk::PipelineLayout(context.device, pipelineLayoutInfo);
+	context.pipelineLayout = context.device.createPipelineLayout(pipelineLayoutInfo);
 
 	vk::GraphicsPipelineCreateInfo pipelineInfo {
 		.pNext = &pipelineRenderingCreateInfo,
@@ -100,5 +108,15 @@ void createGraphicsPipeline(VkContext& context)
 		.layout = context.pipelineLayout,
 		.renderPass = nullptr
 	};
+
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+	pipelineInfo.basePipelineIndex = -1;
+
+	auto [result, pipeline] = context.device.createGraphicsPipeline(nullptr, pipelineInfo);
+
+	if (result != vk::Result::eSuccess) {
+		throw std::runtime_error("Failed to create graphics pipeline!");
+	}
+	context.graphicsPipeline = pipeline;
 }
 

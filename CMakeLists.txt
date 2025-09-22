@@ -20,7 +20,15 @@ add_executable(VulkanApp
     src/vulkan/vk_instance.cpp
     src/vulkan/vk_device.cpp
     src/vulkan/vk_swapchain.cpp
+    src/vulkan/vk_image.cpp
     src/vulkan/vk_pipeline.cpp
+    src/vulkan/vk_command.cpp
+    src/vulkan/vk_sync.cpp
+)
+
+target_compile_definitions(VulkanApp
+  PUBLIC
+  VULKAN_HPP_NO_STRUCT_CONSTRUCTORS=1
 )
 
 target_include_directories(VulkanApp PRIVATE ${Vulkan_INCLUDE_DIRS})

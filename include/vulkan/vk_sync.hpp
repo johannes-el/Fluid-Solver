@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2025 Johannes Elsing
  *
  * Licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
@@ -9,19 +9,6 @@
 
 #pragma once
 
-// === Standard Library === //
-#include <iostream>
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <memory>
-#include <optional>
-#include <filesystem>
-#include <fstream>
-#include <map>
-#include <utility>
+#include "vk_context.hpp"
 
-// === Third-party Libraries === //
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
-#include <GLFW/glfw3.h>
+void createSyncObjects(VkContext& context);
