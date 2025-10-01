@@ -70,10 +70,10 @@ void transition_image_layout(
 
 void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 {
-	vk::Result result = context.commandBuffer.begin({});
-	if (result != vk::Result::eSuccess) {
-		throw std::runtime_error("Failed to begin command buffer recording!");
-	}
+	vk::CommandBufferBeginInfo beginInfo{};
+	beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+	context.commandBuffer.begin(beginInfo);
 
 	transition_image_layout(
 		context,
@@ -102,7 +102,7 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 	};
 
 	context.commandBuffer.beginRendering(renderingInfo);
-        // context.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *context.graphicsPipeline);
+	context.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, context.graphicsPipeline);
         context.commandBuffer.setViewport(
 		0,
 		vk::Viewport(0.0f, 0.0f, static_cast<float>(context.swapChainExtent.width),

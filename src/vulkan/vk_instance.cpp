@@ -90,6 +90,7 @@ void createInstance(VkContext& vkContext)
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	std::vector<const char*> requiredExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
 	if (enableValidationLayers) {
 		requiredExtensions.push_back(vk::EXTDebugUtilsExtensionName);
 	}

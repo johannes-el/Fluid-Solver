@@ -99,6 +99,7 @@ void createDevice(VkContext& context)
 
 	vulkan11Features.shaderDrawParameters = vk::True;
 	vulkan13Features.dynamicRendering = vk::True;
+	vulkan13Features.synchronization2 = vk::True;
 	extendedDynamicStateFeatures.extendedDynamicState = vk::True;
 
 	vulkan13Features.pNext = &extendedDynamicStateFeatures;

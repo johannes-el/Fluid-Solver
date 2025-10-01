@@ -55,11 +55,50 @@ void initVulkan(VkContext& context)
 	createSyncObjects(context);
 }
 
-void drawFrame(VkContext& context)
-{
+void drawFrame(VkContext& context) {
+        context.device.waitIdle();
 
-	context.currentFrame = (context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
+	auto [result, imageIndex] = context.device.acquireNextImageKHR (
+		context.swapChain,
+		UINT64_MAX,
+		context.presentCompleteSemaphore,
+		nullptr
+	);
+
+        recordCommandBuffer(context, imageIndex);
+
+        context.device.resetFences(context.drawFence);
+        vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+        const vk::SubmitInfo submitInfo {
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &context.presentCompleteSemaphore,
+		.pWaitDstStageMask = &waitDestinationStageMask,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &context.commandBuffer,
+		.signalSemaphoreCount = 1,
+		.pSignalSemaphores = &context.renderFinishedSemaphore
+	};
+        context.graphicsQueue.submit(submitInfo, context.drawFence);
+        while ( vk::Result::eTimeout == context.device.waitForFences(context.drawFence, vk::True, UINT64_MAX))
+            ;
+
+        const vk::PresentInfoKHR presentInfoKHR {
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &context.renderFinishedSemaphore,
+		.swapchainCount = 1,
+		.pSwapchains = &context.swapChain,
+		.pImageIndices = &imageIndex
+	};
+
+        result = context.presentQueue.presentKHR(presentInfoKHR);
+
+        switch (result)
+        {
+            case vk::Result::eSuccess: break;
+            case vk::Result::eSuboptimalKHR: std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n"; break;
+            default: break;
+        }
+    }
 
 void run(VkContext& context)
 {
@@ -72,14 +111,35 @@ void run(VkContext& context)
 
 void cleanup(VkContext& context)
 {
-	context.device.destroySwapchainKHR(context.swapChain);
+	context.device.waitIdle();
+
+	context.device.destroy(context.renderFinishedSemaphore);
+	context.device.destroy(context.presentCompleteSemaphore);
+	context.device.destroy(context.drawFence);
+	context.device.destroy(context.commandPool);
+	context.device.destroy(context.graphicsPipeline);
+	context.device.destroy(context.pipelineLayout);
+
+	context.device.destroy(context.shaderModule);
+
 	for (auto &imageView : context.swapChainImageViews) {
 		context.device.destroyImageView(imageView);
 	}
-	context.device.destroy(context.graphicsPipeline);
+
+	context.device.destroySwapchainKHR(context.swapChain);
 	context.device.destroy();
 	context.instance.destroySurfaceKHR(context.surface);
 
+	if (enableValidationLayers && context.debugCallback != VK_NULL_HANDLE) {
+
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
+			context.instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func) {
+			func(context.instance, context.debugCallback, nullptr);
+		}
+	}
+
+	context.instance.destroy();
 	glfwDestroyWindow(context.window);
 	glfwTerminate();
 }

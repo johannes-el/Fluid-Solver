@@ -15,7 +15,6 @@ std::vector<char> readFile(const std::filesystem::path& path) {
 		throw std::ios_base::failure("Failed to open file: " + path.string());
 	}
 
-
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
 

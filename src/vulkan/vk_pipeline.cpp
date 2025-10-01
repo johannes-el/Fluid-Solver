@@ -24,19 +24,18 @@ static std::vector<vk::DynamicState> dynamicStates = {
 }
 void createGraphicsPipeline(VkContext& context)
 {
-	vk::ShaderModule vertModule = createShaderModule(context, readFile("./../shaders/vert.spv"));
-	vk::ShaderModule fragModule = createShaderModule(context, readFile("./../shaders/frag.spv"));
+	context.shaderModule = createShaderModule(context, readFile("./../shaders/slang.spv"));
 
 	vk::PipelineShaderStageCreateInfo vertShaderStageInfo {
 		.stage = vk::ShaderStageFlagBits::eVertex,
-		.module = vertModule,
-		.pName = "main",
+		.module = context.shaderModule,
+		.pName = "vertMain"
 	};
 
 	vk::PipelineShaderStageCreateInfo fragShaderStageInfo {
 		.stage = vk::ShaderStageFlagBits::eFragment,
-		.module = fragModule,
-		.pName = "main"
+		.module = context.shaderModule,
+		.pName = "fragMain"
 	};
 
 	vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};

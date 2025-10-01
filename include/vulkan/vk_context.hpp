@@ -41,11 +41,13 @@ struct VkContext {
 	vk::CommandPool commandPool = nullptr;
 	vk::CommandBuffer commandBuffer = nullptr;
 
+	vk::ShaderModule shaderModule;
+
 	vk::Semaphore presentCompleteSemaphore = nullptr;
 	vk::Semaphore renderFinishedSemaphore  = nullptr;
 	vk::Fence drawFence                    = nullptr;
 
-	GLFWwindow*                window           = nullptr;
+	GLFWwindow* window                     = nullptr;
 	uint32_t currentFrame = 0;
 };
 

@@ -69,6 +69,8 @@ void createSwapChain(VkContext& context)
 	// Create the swapchain
 	context.swapChain = context.device.createSwapchainKHR(swapChainCreateInfo);
 
+	context.swapChainImages = context.device.getSwapchainImagesKHR(context.swapChain);
+
 	// Store chosen image format for later use
 	context.swapChainImageFormat = context.swapChainSurfaceFormat.format;
 }
