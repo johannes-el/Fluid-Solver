@@ -39,16 +39,19 @@ struct VkContext {
 	vk::DebugUtilsMessengerEXT debugCallback    = nullptr;
 
 	vk::CommandPool commandPool = nullptr;
-	vk::CommandBuffer commandBuffer = nullptr;
+	std::vector<vk::CommandBuffer> commandBuffers;
 
 	vk::ShaderModule shaderModule;
 
-	vk::Semaphore presentCompleteSemaphore = nullptr;
-	vk::Semaphore renderFinishedSemaphore  = nullptr;
-	vk::Fence drawFence                    = nullptr;
+	std::vector<vk::Semaphore> presentCompleteSemaphores;
+	std::vector<vk::Semaphore> renderFinishedSemaphores;
+	std::vector<vk::Fence> inFlightFences;
 
 	GLFWwindow* window                     = nullptr;
 	uint32_t currentFrame = 0;
+
+	vk::Buffer vertexBuffer                = nullptr;
+	vk::DeviceMemory vertexBufferMemory    = nullptr;
 };
 
 void initWindow(VkContext& context, AppConfig& config);

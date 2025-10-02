@@ -24,6 +24,8 @@ add_executable(VulkanApp
     src/vulkan/vk_pipeline.cpp
     src/vulkan/vk_command.cpp
     src/vulkan/vk_sync.cpp
+    src/vulkan/vk_vertex.cpp
+    src/vulkan/vk_buffer.cpp
 )
 
 target_compile_definitions(VulkanApp

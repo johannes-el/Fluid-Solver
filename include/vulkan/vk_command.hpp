@@ -12,5 +12,5 @@
 #include "vk_context.hpp"
 
 void createCommandPool(VkContext& context);
-void createCommandBuffer(VkContext& context);
+void createCommandBuffers(VkContext& context);
 void recordCommandBuffer(VkContext& context, uint32_t imageIndex);

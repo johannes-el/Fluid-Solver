@@ -12,6 +12,7 @@
 #include "app_config.hpp"
 
 #include "vulkan/vk_context.hpp"
+#include "vulkan/vk_buffer.hpp"
 #include "vulkan/vk_instance.hpp"
 #include "vulkan/vk_device.hpp"
 #include "vulkan/vk_swapchain.hpp"
@@ -51,7 +52,8 @@ void initVulkan(VkContext& context)
 	createImageViews(context);
 	createGraphicsPipeline(context);
 	createCommandPool(context);
-	createCommandBuffer(context);
+	createVertexBuffer(context);
+	createCommandBuffers(context);
 	createSyncObjects(context);
 }
 
@@ -61,30 +63,30 @@ void drawFrame(VkContext& context) {
 	auto [result, imageIndex] = context.device.acquireNextImageKHR (
 		context.swapChain,
 		UINT64_MAX,
-		context.presentCompleteSemaphore,
+		context.presentCompleteSemaphores[context.currentFrame],
 		nullptr
 	);
 
         recordCommandBuffer(context, imageIndex);
 
-        context.device.resetFences(context.drawFence);
+        context.device.resetFences(context.inFlightFences[context.currentFrame]);
         vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
         const vk::SubmitInfo submitInfo {
 		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = &context.presentCompleteSemaphore,
+		.pWaitSemaphores = &context.presentCompleteSemaphores[context.currentFrame],
 		.pWaitDstStageMask = &waitDestinationStageMask,
 		.commandBufferCount = 1,
-		.pCommandBuffers = &context.commandBuffer,
+		.pCommandBuffers = &context.commandBuffers[context.currentFrame],
 		.signalSemaphoreCount = 1,
-		.pSignalSemaphores = &context.renderFinishedSemaphore
+		.pSignalSemaphores = &context.renderFinishedSemaphores[context.currentFrame]
 	};
-        context.graphicsQueue.submit(submitInfo, context.drawFence);
-        while ( vk::Result::eTimeout == context.device.waitForFences(context.drawFence, vk::True, UINT64_MAX))
+        context.graphicsQueue.submit(submitInfo, context.inFlightFences[context.currentFrame]);
+        while ( vk::Result::eTimeout == context.device.waitForFences(context.inFlightFences[context.currentFrame], vk::True, UINT64_MAX))
             ;
 
         const vk::PresentInfoKHR presentInfoKHR {
 		.waitSemaphoreCount = 1,
-		.pWaitSemaphores = &context.renderFinishedSemaphore,
+		.pWaitSemaphores = &context.renderFinishedSemaphores[context.currentFrame],
 		.swapchainCount = 1,
 		.pSwapchains = &context.swapChain,
 		.pImageIndices = &imageIndex
@@ -98,7 +100,9 @@ void drawFrame(VkContext& context) {
             case vk::Result::eSuboptimalKHR: std::cout << "vk::Queue::presentKHR returned vk::Result::eSuboptimalKHR !\n"; break;
             default: break;
         }
-    }
+
+	context.currentFrame = (context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
 
 void run(VkContext& context)
 {
@@ -113,9 +117,21 @@ void cleanup(VkContext& context)
 {
 	context.device.waitIdle();
 
-	context.device.destroy(context.renderFinishedSemaphore);
-	context.device.destroy(context.presentCompleteSemaphore);
-	context.device.destroy(context.drawFence);
+	context.device.freeMemory(context.vertexBufferMemory);
+	context.device.destroyBuffer(context.vertexBuffer);
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (context.renderFinishedSemaphores[i]) {
+			context.device.destroy(context.renderFinishedSemaphores[i]);
+		}
+		if (context.presentCompleteSemaphores[i]) {
+			context.device.destroy(context.presentCompleteSemaphores[i]);
+		}
+		if (context.inFlightFences[i]) {
+			context.device.destroy(context.inFlightFences[i]);
+		}
+	}
+
 	context.device.destroy(context.commandPool);
 	context.device.destroy(context.graphicsPipeline);
 	context.device.destroy(context.pipelineLayout);

@@ -8,10 +8,17 @@
  */
 
 #include "vulkan/vk_sync.hpp"
+#include "vulkan/vk_context.hpp"
 
 void createSyncObjects(VkContext& context)
 {
-	context.presentCompleteSemaphore = context.device.createSemaphore(vk::SemaphoreCreateInfo());
-	context.renderFinishedSemaphore = context.device.createSemaphore(vk::SemaphoreCreateInfo());
-	context.drawFence = context.device.createFence({ .flags = vk::FenceCreateFlagBits::eSignaled });
+	context.presentCompleteSemaphores.clear();
+	context.renderFinishedSemaphores.clear();
+	context.inFlightFences.clear();
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		context.presentCompleteSemaphores.emplace_back(context.device.createSemaphore(vk::SemaphoreCreateInfo()));
+		context.renderFinishedSemaphores.emplace_back(context.device.createSemaphore(vk::SemaphoreCreateInfo()));
+		context.inFlightFences.emplace_back(context.device.createFence({ .flags = vk::FenceCreateFlagBits::eSignaled }));
+	}
 }

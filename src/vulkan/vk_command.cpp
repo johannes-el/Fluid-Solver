@@ -8,6 +8,7 @@
  */
 
 #include "vulkan/vk_command.hpp"
+#include "vulkan/vk_context.hpp"
 #include <vulkan/vulkan_structs.hpp>
 
 void createCommandPool(VkContext& context)
@@ -19,15 +20,16 @@ void createCommandPool(VkContext& context)
 	context.commandPool = context.device.createCommandPool(poolInfo);
 }
 
-void createCommandBuffer(VkContext& context)
+void createCommandBuffers(VkContext& context)
 {
+	context.commandBuffers.clear();
 	vk::CommandBufferAllocateInfo allocInfo {
 		.commandPool = context.commandPool,
 		.level = vk::CommandBufferLevel::ePrimary,
-		.commandBufferCount = 1
+		.commandBufferCount = MAX_FRAMES_IN_FLIGHT
 	};
 
-	context.commandBuffer = std::move(context.device.allocateCommandBuffers(allocInfo)).front();
+	context.commandBuffers = context.device.allocateCommandBuffers(allocInfo);
 }
 
 void transition_image_layout(
@@ -65,7 +67,7 @@ void transition_image_layout(
 		.pImageMemoryBarriers = &barrier
 	};
 
-	context.commandBuffer.pipelineBarrier2(dependency_info);
+	context.commandBuffers[context.currentFrame].pipelineBarrier2(dependency_info);
 }
 
 void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
@@ -73,7 +75,7 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 	vk::CommandBufferBeginInfo beginInfo{};
 	beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
-	context.commandBuffer.begin(beginInfo);
+	context.commandBuffers[context.currentFrame].begin(beginInfo);
 
 	transition_image_layout(
 		context,
@@ -101,9 +103,9 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 		.pColorAttachments = &attachmentInfo
 	};
 
-	context.commandBuffer.beginRendering(renderingInfo);
-	context.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, context.graphicsPipeline);
-        context.commandBuffer.setViewport(
+	context.commandBuffers[context.currentFrame].beginRendering(renderingInfo);
+	context.commandBuffers[context.currentFrame].bindPipeline(vk::PipelineBindPoint::eGraphics, context.graphicsPipeline);
+        context.commandBuffers[context.currentFrame].setViewport(
 		0,
 		vk::Viewport(0.0f, 0.0f, static_cast<float>(context.swapChainExtent.width),
 			static_cast<float>(context.swapChainExtent.height),
@@ -111,9 +113,10 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 			1.0f
 		)
 	);
-        context.commandBuffer.setScissor( 0, vk::Rect2D( vk::Offset2D(0, 0), context.swapChainExtent));
-        context.commandBuffer.draw(3, 1, 0, 0);
-        context.commandBuffer.endRendering();
+        context.commandBuffers[context.currentFrame].setScissor( 0, vk::Rect2D( vk::Offset2D(0, 0), context.swapChainExtent));
+	context.commandBuffers[context.currentFrame].bindVertexBuffers(0, context.vertexBuffer, {0});
+        context.commandBuffers[context.currentFrame].draw(3, 1, 0, 0);
+        context.commandBuffers[context.currentFrame].endRendering();
 
 	transition_image_layout(
 		context,
@@ -126,5 +129,5 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 		vk::PipelineStageFlagBits2::eBottomOfPipe
 	);
 
-        context.commandBuffer.end();
+        context.commandBuffers[context.currentFrame].end();
 }

@@ -8,6 +8,7 @@
  */
 
 #include "vulkan/vk_pipeline.hpp"
+#include "vulkan/vk_vertex.hpp"
 #include "FileIO.hpp"
 
 static std::vector<vk::DynamicState> dynamicStates = {
@@ -45,7 +46,16 @@ void createGraphicsPipeline(VkContext& context)
 		.pDynamicStates = dynamicStates.data()
 	};
 
-	vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
+	auto bindingDescription = Vertex::getBindingDescription();
+	auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+	vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
+		.vertexBindingDescriptionCount = 1,
+		.pVertexBindingDescriptions = &bindingDescription,
+		.vertexAttributeDescriptionCount = attributeDescriptions.size(),
+		.pVertexAttributeDescriptions = attributeDescriptions.data()
+	};
+
 	vk::PipelineInputAssemblyStateCreateInfo inputAssembly {
 		.topology = vk::PrimitiveTopology::eTriangleList
 	};

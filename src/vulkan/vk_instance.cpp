@@ -26,7 +26,7 @@ void createSurface(VkContext& context)
 {
 	VkSurfaceKHR _surface;
 	if (glfwCreateWindowSurface(
-			context.instance,
+		       context.instance,
 			context.window,
 			nullptr,
 			&_surface) != VK_SUCCESS)
@@ -100,7 +100,7 @@ void createInstance(VkContext& vkContext)
 		requiredLayers.push_back("VK_LAYER_KHRONOS_validation");
 	}
 
-	vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo{
+	vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo {
 		.messageSeverity =
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |

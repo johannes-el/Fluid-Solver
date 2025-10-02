@@ -13,6 +13,7 @@
 #include <vulkan/vulkan_structs.hpp>
 
 #include "vulkan/vk_swapchain.hpp"
+#include <vulkan/vk_image.hpp>
 
 void createSwapChain(VkContext& context)
 {
@@ -78,16 +79,16 @@ void createSwapChain(VkContext& context)
 void recreateSwapChain(VkContext& context)
 {
 	context.device.waitIdle();
-	VkSurfaceCapabilitiesKHR surface_properties;
+	cleanupSwapchain(context);
 
 	createSwapChain(context);
-	// createImageViews();
+	createImageViews(context);
 }
 
 void cleanupSwapchain(VkContext& context)
 {
-	// context.swapchainImageViews.clear();
-	// swapchain = nullptr;
+	context.swapChainImageViews.clear();
+	context.swapChain = nullptr;
 }
 
 void get_queue_family_index(std::vector<vk::QueueFamilyProperties> const &queue_family_properties, vk::QueueFlagBits queue_flag)
