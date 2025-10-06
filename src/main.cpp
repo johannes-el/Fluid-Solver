@@ -18,6 +18,7 @@
 
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_instance.hpp"
+#include "gui/imgui.hpp"
 #include "app_config.hpp"
 
 void printUsage()
@@ -66,6 +67,7 @@ int main(int argc, char** argv)
 	VkContext context{};
 	initWindow(context, config);
 	initVulkan(context);
+	initImGUI(context);
 
 	run(context);
 

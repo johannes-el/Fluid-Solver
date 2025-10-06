@@ -22,6 +22,12 @@
 #include <utility>
 
 // === Third-party Libraries === //
+#include "stb_image.h"
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
+
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 #include <GLFW/glfw3.h>

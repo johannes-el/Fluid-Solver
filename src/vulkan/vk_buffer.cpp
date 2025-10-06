@@ -47,3 +47,19 @@ void createVertexBuffer(VkContext& context)
 	memcpy(data, vertices.data(), bufferInfo.size);
 	context.device.unmapMemory(context.vertexBufferMemory);
 }
+
+void createIndexBuffer(VkContext& context)
+{
+	vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+	vk::Buffer stagingBuffer{};
+	/*
+	context.device.createBuffer(
+		bufferSize,
+		vk::BufferUsageFlagBits::eTransferSrc,
+		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+		stagingBuffer,
+		context.stagingBufferMemory
+	);
+	*/
+}

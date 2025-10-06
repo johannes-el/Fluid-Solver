@@ -11,6 +11,7 @@
 
 #include "includes.hpp"
 #include "app_config.hpp"
+#include <vulkan/vulkan_handles.hpp>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -52,6 +53,12 @@ struct VkContext {
 
 	vk::Buffer vertexBuffer                = nullptr;
 	vk::DeviceMemory vertexBufferMemory    = nullptr;
+
+	vk::Buffer indexBuffer                 = nullptr;
+	vk::DeviceMemory indexBufferMemory     = nullptr;
+
+	vk::DescriptorPool descriptorPool      = nullptr;
+	std::vector<vk::DescriptorSet> descriptorSets;
 };
 
 void initWindow(VkContext& context, AppConfig& config);
