@@ -2,6 +2,7 @@
 
 void initImGUI(VkContext& context)
 {
+	/*
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -26,4 +27,5 @@ void initImGUI(VkContext& context)
 	// init_info.RenderPass = context.renderPass;
 
 	ImGui_ImplVulkan_Init(&init_info);
+	*/
 }

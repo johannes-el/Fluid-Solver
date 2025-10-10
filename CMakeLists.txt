@@ -53,6 +53,9 @@ add_executable(VulkanApp
 
     # GUI integration
     src/gui/imgui.cpp
+
+    # Audio
+    src/audio/audio.cpp
 )
 
 # === Include Directories ===

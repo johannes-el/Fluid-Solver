@@ -13,43 +13,44 @@
   This is an implementation of a fluid solver for
   a bachelor project in Computer Graphics.
 
- */
+*/
 //////////////////////////////////////////////////////////////////////////
 
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_instance.hpp"
 #include "gui/imgui.hpp"
 #include "app_config.hpp"
+#include "audio/audio.hpp"
 
 void printUsage()
 {
-    std::cerr << "Usage: program [--width N] [--height N] [--title NAME]\n";
+	std::cerr << "Usage: program [--width N] [--height N] [--title NAME]\n";
 }
 
 /* Parse command line arguments. */
 AppConfig parseArgs(int argc, char** argv)
 {
-    AppConfig config;
+	AppConfig config;
 
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
+	for (int i = 1; i < argc; ++i) {
+		std::string arg = argv[i];
 
-        if (arg == "--width" && i + 1 < argc) {
-            config.width = std::stoi(argv[++i]);
-        }
-        else if (arg == "--height" && i + 1 < argc) {
-            config.height = std::stoi(argv[++i]);
-        }
-        else if (arg == "--title" && i + 1 < argc) {
-            config.title = argv[++i];
-        }
-        else {
-            printUsage();
-	    throw std::runtime_error("Unknown argument: " + arg);
-        }
-    }
+		if (arg == "--width" && i + 1 < argc) {
+			config.width = std::stoi(argv[++i]);
+		}
+		else if (arg == "--height" && i + 1 < argc) {
+			config.height = std::stoi(argv[++i]);
+		}
+		else if (arg == "--title" && i + 1 < argc) {
+			config.title = argv[++i];
+		}
+		else {
+			printUsage();
+			throw std::runtime_error("Unknown argument: " + arg);
+		}
+	}
 
-    return config;
+	return config;
 }
 
 int main(int argc, char** argv)
@@ -64,6 +65,12 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	Audio::AudioContext audioContext{};
+	Audio::init(audioContext);
+
+	std::filesystem::path background_music = "../res/Sounds/8-bit.mp3";
+	Audio::playMusic(audioContext, background_music, true);
+
 	VkContext context{};
 	initWindow(context, config);
 	initVulkan(context);
@@ -72,4 +79,5 @@ int main(int argc, char** argv)
 	run(context);
 
 	cleanup(context);
+	Audio::shutdown(audioContext);
 }
