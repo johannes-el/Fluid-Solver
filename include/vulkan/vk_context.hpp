@@ -12,6 +12,7 @@
 #include "includes.hpp"
 #include "app_config.hpp"
 #include <vulkan/vulkan_handles.hpp>
+#include "vk_mem_alloc.h"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -26,6 +27,8 @@ struct VkContext {
 
 	vk::SurfaceFormatKHR swapChainSurfaceFormat;
 	vk::Extent2D swapChainExtent;
+
+	VmaAllocator allocator;
 
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
@@ -50,6 +53,8 @@ struct VkContext {
 
 	GLFWwindow* window                     = nullptr;
 	uint32_t currentFrame = 0;
+
+	bool framebufferResized = false;
 
 	vk::Buffer vertexBuffer                = nullptr;
 	vk::DeviceMemory vertexBufferMemory    = nullptr;

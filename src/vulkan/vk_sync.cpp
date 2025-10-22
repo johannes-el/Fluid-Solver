@@ -16,9 +16,20 @@ void createSyncObjects(VkContext& context)
 	context.renderFinishedSemaphores.clear();
 	context.inFlightFences.clear();
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		context.presentCompleteSemaphores.emplace_back(context.device.createSemaphore(vk::SemaphoreCreateInfo()));
-		context.renderFinishedSemaphores.emplace_back(context.device.createSemaphore(vk::SemaphoreCreateInfo()));
-		context.inFlightFences.emplace_back(context.device.createFence({ .flags = vk::FenceCreateFlagBits::eSignaled }));
+	context.renderFinishedSemaphores.resize(context.swapChainImages.size());
+	context.presentCompleteSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	context.inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
+	vk::SemaphoreCreateInfo semaphoreInfo{};
+	vk::FenceCreateInfo fenceInfo{};
+	fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		context.presentCompleteSemaphores[i] = context.device.createSemaphore(semaphoreInfo);
+		context.inFlightFences[i] = context.device.createFence(fenceInfo);
+	}
+
+	for (size_t i = 0; i < context.swapChainImages.size(); ++i) {
+		context.renderFinishedSemaphores[i] = context.device.createSemaphore(semaphoreInfo);
 	}
 }

@@ -68,7 +68,12 @@ void createSwapChain(VkContext& context)
 	}
 
 	// Create the swapchain
-	context.swapChain = context.device.createSwapchainKHR(swapChainCreateInfo);
+	// context.swapChain = context.device.createSwapchainKHR(swapChainCreateInfo);
+	try {
+		context.swapChain = context.device.createSwapchainKHR(swapChainCreateInfo);
+	} catch (vk::SystemError& err) {
+		std::cerr << "Failed to create object: " << err.what() << std::endl;
+	}
 
 	context.swapChainImages = context.device.getSwapchainImagesKHR(context.swapChain);
 
@@ -87,7 +92,13 @@ void recreateSwapChain(VkContext& context)
 
 void cleanupSwapchain(VkContext& context)
 {
+	for (auto& imageView : context.swapChainImageViews) {
+		context.device.destroyImageView(imageView);
+	}
 	context.swapChainImageViews.clear();
+
+	context.device.destroySwapchainKHR(context.swapChain);
+	context.swapChainImages.clear();
 	context.swapChain = nullptr;
 }
 

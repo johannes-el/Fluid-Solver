@@ -95,6 +95,23 @@ void createInstance(VkContext& vkContext)
 		requiredExtensions.push_back(vk::EXTDebugUtilsExtensionName);
 	}
 
+	// Enable surface extensions depending on os
+#if defined(_WIN32)
+	requiredExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	requiredExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#elif defined(_DIRECT2DISPLAY)
+	requiredExtensions.push_back(VK_KHR_DISPLAY_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+	requiredExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+	requiredExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_IOS_MVK)
+	requiredExtensions.push_back(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+	requiredExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#endif
+
 	std::vector<const char*> requiredLayers;
 	if (enableValidationLayers) {
 		requiredLayers.push_back("VK_LAYER_KHRONOS_validation");

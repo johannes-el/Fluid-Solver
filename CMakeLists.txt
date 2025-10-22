@@ -27,6 +27,15 @@ add_library(imgui
     external/imgui/backends/imgui_impl_vulkan.cpp
 )
 
+# === VulkanMemoryAllocator ===
+add_library(vma STATIC
+    external/VulkanMemoryAllocator/src/VmaUsage.cpp
+)
+
+target_include_directories(vma PUBLIC
+    external/VulkanMemoryAllocator/include
+)
+
 target_include_directories(imgui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
     ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
@@ -74,6 +83,7 @@ target_link_libraries(VulkanApp PRIVATE
     ${Vulkan_LIBRARIES}
     glfw
     imgui
+    vma
 )
 
 # === Optional: Group folders in IDEs ===
