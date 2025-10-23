@@ -59,6 +59,7 @@ add_executable(VulkanApp
     src/vulkan/vk_vertex.cpp
     src/vulkan/vk_buffer.cpp
     src/vulkan/vk_descriptor.cpp
+    src/vulkan/vk_texture.cpp
 
     # GUI integration
     src/gui/imgui.cpp

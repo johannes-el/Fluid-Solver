@@ -1,7 +1,26 @@
 #include "vulkan/vk_descriptor.hpp"
 #include "vulkan/vk_context.hpp"
+#include "vulkan/vk_uniforms.hpp"
 #include <vulkan/vulkan_structs.hpp>
 
+void createDescriptorSetLayout(VkContext& context)
+{
+    vk::DescriptorSetLayoutBinding uboLayoutBinding(
+        0,
+        vk::DescriptorType::eUniformBuffer,
+        1,
+        vk::ShaderStageFlagBits::eVertex
+    );
+
+    std::array<vk::DescriptorSetLayoutBinding, 1> bindings = { uboLayoutBinding };
+
+    vk::DescriptorSetLayoutCreateInfo layoutInfo {
+	    .bindingCount = static_cast<uint32_t>(bindings.size()),
+	    .pBindings = bindings.data()
+    };
+
+    context.descriptorSetLayout = context.device.createDescriptorSetLayout(layoutInfo);
+}
 
 void createDescriptorPool(VkContext& context)
 {
@@ -13,8 +32,27 @@ void createDescriptorPool(VkContext& context)
 		.pPoolSizes = &poolSize
 	};
 
-	// std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *context.descriptorSetLayout);
+	context.descriptorPool = context.device.createDescriptorPool(poolInfo);
+}
+
+void createDescriptorSets(VkContext& context)
+{
+	std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, context.descriptorSetLayout);
+	vk::DescriptorSetAllocateInfo allocInfo{ .descriptorPool = context.descriptorPool, .descriptorSetCount = static_cast<uint32_t>(layouts.size()), .pSetLayouts = layouts.data() };
 
 	context.descriptorSets.clear();
-	// context.descriptorSets = context.device.allocateDescriptorSets(allocInfo);
+	context.descriptorSets = context.device.allocateDescriptorSets(allocInfo);
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vk::DescriptorBufferInfo bufferInfo{ .buffer = context.uniformBuffers[i], .offset = 0, .range = sizeof(UniformBufferObject) };
+		vk::WriteDescriptorSet descriptorWrite {
+			.dstSet = context.descriptorSets[i],
+			.dstBinding = 0,
+			.dstArrayElement = 0,
+			.descriptorCount = 1,
+			.descriptorType = vk::DescriptorType::eUniformBuffer,
+			.pBufferInfo = &bufferInfo
+		};
+		context.device.updateDescriptorSets(descriptorWrite, {});
+	}
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "vk_context.hpp"
 
 void createBuffer(VkContext& context,
@@ -16,3 +15,6 @@ void copyBuffer(VkContext& context,
 
 void createVertexBuffer(VkContext& context);
 void createIndexBuffer(VkContext& context);
+void createUniformBuffers(VkContext& context);
+
+void updateUniformBuffer(VkContext& context, uint32_t currentImage);

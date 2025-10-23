@@ -20,6 +20,8 @@
 #include "vulkan/vk_image.hpp"
 #include "vulkan/vk_command.hpp"
 #include "vulkan/vk_sync.hpp"
+#include "vulkan/vk_descriptor.hpp"
+#include "vulkan/vk_texture.hpp"
 #include <cstdint>
 
 #define VMA_IMPLEMENTATION
@@ -54,10 +56,15 @@ void initVulkan(VkContext& context)
 	createDevice(context);
 	createSwapChain(context);
 	createImageViews(context);
+	createDescriptorSetLayout(context);
 	createGraphicsPipeline(context);
 	createCommandPool(context);
+	createTextureImage(context);
 	createVertexBuffer(context);
 	createIndexBuffer(context);
+	createUniformBuffers(context);
+	createDescriptorPool(context);
+	createDescriptorSets(context);
 	createCommandBuffers(context);
 	createSyncObjects(context);
 }
@@ -88,6 +95,8 @@ void drawFrame(VkContext& context) {
         if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
         }
+
+	updateUniformBuffer(context, context.currentFrame);
 
         context.device.resetFences(context.inFlightFences[context.currentFrame]);
         context.commandBuffers[context.currentFrame].reset();
@@ -140,6 +149,22 @@ void run(VkContext& context)
 void cleanup(VkContext& context)
 {
 	context.device.waitIdle();
+
+	context.device.destroyDescriptorSetLayout(context.descriptorSetLayout);
+	context.device.destroyDescriptorPool(context.descriptorPool);
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (context.uniformBuffersMapped[i]) {
+			context.device.unmapMemory(context.uniformBuffersMemory[i]);
+		}
+
+		context.device.destroyBuffer(context.uniformBuffers[i]);
+		context.device.freeMemory(context.uniformBuffersMemory[i]);
+	}
+
+	context.uniformBuffers.clear();
+	context.uniformBuffersMemory.clear();
+	context.uniformBuffersMapped.clear();
 
 	context.device.destroyBuffer(context.vertexBuffer);
 	context.device.freeMemory(context.vertexBufferMemory);

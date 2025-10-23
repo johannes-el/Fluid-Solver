@@ -10,6 +10,7 @@
 #include "vulkan/vk_command.hpp"
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_vertex.hpp"
+#include "vulkan/vulkan.hpp"
 #include <vulkan/vulkan_structs.hpp>
 
 void createCommandPool(VkContext& context)
@@ -117,6 +118,7 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
         context.commandBuffers[context.currentFrame].setScissor( 0, vk::Rect2D( vk::Offset2D(0, 0), context.swapChainExtent));
 	context.commandBuffers[context.currentFrame].bindVertexBuffers(0, context.vertexBuffer, {0});
 	context.commandBuffers[context.currentFrame].bindIndexBuffer(context.indexBuffer, 0, vk::IndexTypeValue<decltype(indices)::value_type>::value);
+	context.commandBuffers[context.currentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.pipelineLayout, 0, context.descriptorSets[context.currentFrame], nullptr);
         context.commandBuffers[context.currentFrame].drawIndexed(indices.size(), 1, 0, 0, 0);
         context.commandBuffers[context.currentFrame].endRendering();
 

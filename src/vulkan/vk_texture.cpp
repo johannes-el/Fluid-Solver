@@ -1,12 +1,25 @@
 #include "vulkan/vk_texture.hpp"
+#include "vulkan/vk_buffer.hpp"
+#include "vulkan/vulkan.hpp"
 
 void createTextureImage(VkContext& context)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("../textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels) {
 		throw std::runtime_error("Failed to load texture image!");
 	}
+
+	vk::Buffer stagingBuffer{};
+	vk::DeviceMemory stagingBufferMemory{};
+
+	createBuffer(context, imageSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+	void* data = context.device.mapMemory(stagingBufferMemory, 0, imageSize);
+	memcpy(data, pixels, static_cast<size_t>(imageSize));
+	context.device.unmapMemory(stagingBufferMemory);
+
+	stbi_image_free(pixels);
 }

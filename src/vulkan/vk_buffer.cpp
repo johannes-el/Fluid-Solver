@@ -2,6 +2,10 @@
 #include "vulkan/vk_buffer.hpp"
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_vertex.hpp"
+#include "vulkan/vk_uniforms.hpp"
+#include "vulkan/vulkan.hpp"
+#include <chrono>
+#include <glm/ext/matrix_clip_space.hpp>
 
 uint32_t findMemoryType(VkContext& context, uint32_t typeFilter, vk::MemoryPropertyFlags properties)
 {
@@ -172,4 +176,47 @@ void createIndexBuffer(VkContext& context)
 
 	context.device.destroyBuffer(stagingBuffer);
 	context.device.freeMemory(stagingBufferMemory);
+}
+
+void createUniformBuffers(VkContext& context)
+{
+	context.uniformBuffers.clear();
+	context.uniformBuffersMemory.clear();
+	context.uniformBuffersMapped.clear();
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+		vk::Buffer buffer{};
+		vk::DeviceMemory bufferMem{};
+		createBuffer(context,
+			bufferSize,
+			vk::BufferUsageFlagBits::eUniformBuffer,
+			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+			buffer,
+			bufferMem
+		);
+
+		context.uniformBuffers.emplace_back(std::move(buffer));
+		context.uniformBuffersMemory.emplace_back(std::move(bufferMem));
+		context.uniformBuffersMapped.emplace_back(
+			context.device.mapMemory(context.uniformBuffersMemory[i], 0, bufferSize)
+		);
+	}
+}
+
+void updateUniformBuffer(VkContext& context, uint32_t currentImage)
+{
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	UniformBufferObject ubo{};
+	ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(context.swapChainExtent.width) / static_cast<float>(context.swapChainExtent.height), 0.1f, 10.0f);
+
+	ubo.proj[1][1] *= -1;
+
+	memcpy(context.uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }

@@ -39,6 +39,7 @@ struct VkContext {
 	std::vector<vk::Semaphore> recycledSemaphores;
 
 	vk::Pipeline               graphicsPipeline = nullptr;
+	vk::DescriptorSetLayout descriptorSetLayout = nullptr;
 	vk::PipelineLayout         pipelineLayout   = nullptr;
 	vk::DebugUtilsMessengerEXT debugCallback    = nullptr;
 
@@ -62,8 +63,15 @@ struct VkContext {
 	vk::Buffer indexBuffer                 = nullptr;
 	vk::DeviceMemory indexBufferMemory     = nullptr;
 
+	std::vector<vk::Buffer> uniformBuffers;
+	std::vector<vk::DeviceMemory> uniformBuffersMemory;
+	std::vector<void*> uniformBuffersMapped;
+
 	vk::DescriptorPool descriptorPool      = nullptr;
 	std::vector<vk::DescriptorSet> descriptorSets;
+
+	vk::Image textureImage = nullptr;
+	vk::DeviceMemory textureImageMemory = nullptr;
 };
 
 void initWindow(VkContext& context, AppConfig& config);

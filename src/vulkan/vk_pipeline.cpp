@@ -75,7 +75,7 @@ void createGraphicsPipeline(VkContext& context)
 	rasterizer.polygonMode = vk::PolygonMode::eFill;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
-	rasterizer.frontFace = vk::FrontFace::eClockwise;
+	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	vk::PipelineMultisampleStateCreateInfo multisampling {
@@ -97,8 +97,8 @@ void createGraphicsPipeline(VkContext& context)
 	};
 
 	vk::PipelineLayoutCreateInfo pipelineLayoutInfo {
-		.setLayoutCount = 0,
-		.pushConstantRangeCount = 0
+		.setLayoutCount = 1,
+		.pSetLayouts = &context.descriptorSetLayout
 	};
 
 	context.pipelineLayout = context.device.createPipelineLayout(pipelineLayoutInfo);
