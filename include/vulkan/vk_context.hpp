@@ -13,6 +13,7 @@
 #include "app_config.hpp"
 #include <vulkan/vulkan_handles.hpp>
 #include "vk_mem_alloc.h"
+#include "vulkan/vk_vertex.hpp"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -57,6 +58,9 @@ struct VkContext {
 
 	bool framebufferResized = false;
 
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
+
 	vk::Buffer vertexBuffer                = nullptr;
 	vk::DeviceMemory vertexBufferMemory    = nullptr;
 
@@ -71,7 +75,12 @@ struct VkContext {
 	std::vector<vk::DescriptorSet> descriptorSets;
 
 	vk::Image textureImage = nullptr;
+	vk::ImageView textureImageView = nullptr;
 	vk::DeviceMemory textureImageMemory = nullptr;
+
+	vk::Image depthImage = nullptr;
+	vk::DeviceMemory depthImageMemory = nullptr;
+	vk::ImageView depthImageView = nullptr;
 };
 
 void initWindow(VkContext& context, AppConfig& config);

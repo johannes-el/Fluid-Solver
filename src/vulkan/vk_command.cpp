@@ -91,18 +91,30 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
         );
 
         vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
-	vk::RenderingAttachmentInfo attachmentInfo = {
+	vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
+
+	vk::RenderingAttachmentInfo colorAttachmentInfo = {
 		.imageView = context.swapChainImageViews[imageIndex],
 		.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 		.loadOp = vk::AttachmentLoadOp::eClear,
+		.storeOp = vk::AttachmentStoreOp::eStore,
 		.clearValue = clearColor
+	};
+
+	vk::RenderingAttachmentInfo depthAttachmentInfo = {
+		.imageView = context.depthImageView,
+		.imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
+		.loadOp = vk::AttachmentLoadOp::eClear,
+		.storeOp = vk::AttachmentStoreOp::eDontCare,
+		.clearValue = clearDepth
 	};
 
 	vk::RenderingInfo renderingInfo = {
 		.renderArea = { .offset = { 0, 0 }, .extent = context.swapChainExtent },
 		.layerCount = 1,
 		.colorAttachmentCount = 1,
-		.pColorAttachments = &attachmentInfo
+		.pColorAttachments = &colorAttachmentInfo,
+		.pDepthAttachment = &depthAttachmentInfo
 	};
 
 	context.commandBuffers[context.currentFrame].beginRendering(renderingInfo);
@@ -117,9 +129,9 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 	);
         context.commandBuffers[context.currentFrame].setScissor( 0, vk::Rect2D( vk::Offset2D(0, 0), context.swapChainExtent));
 	context.commandBuffers[context.currentFrame].bindVertexBuffers(0, context.vertexBuffer, {0});
-	context.commandBuffers[context.currentFrame].bindIndexBuffer(context.indexBuffer, 0, vk::IndexTypeValue<decltype(indices)::value_type>::value);
+	context.commandBuffers[context.currentFrame].bindIndexBuffer(context.indexBuffer, 0, vk::IndexType::eUint32);
 	context.commandBuffers[context.currentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.pipelineLayout, 0, context.descriptorSets[context.currentFrame], nullptr);
-        context.commandBuffers[context.currentFrame].drawIndexed(indices.size(), 1, 0, 0, 0);
+        context.commandBuffers[context.currentFrame].drawIndexed(context.indices.size(), 1, 0, 0, 0);
         context.commandBuffers[context.currentFrame].endRendering();
 
 	transition_image_layout(
@@ -134,4 +146,34 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 	);
 
         context.commandBuffers[context.currentFrame].end();
+}
+
+vk::CommandBuffer beginSingleTimeCommands(VkContext& context)
+{
+	vk::CommandBufferAllocateInfo allocInfo {
+		.commandPool = context.commandPool,
+		.level = vk::CommandBufferLevel::ePrimary,
+		.commandBufferCount = 1
+	};
+
+	vk::CommandBuffer commandBuffer = std::move(context.device.allocateCommandBuffers(allocInfo).front());
+	vk::CommandBufferBeginInfo beginInfo {
+		.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
+	};
+	commandBuffer.begin(beginInfo);
+
+	return commandBuffer;
+}
+
+void endSingleTimeCommands(VkContext& context, vk::CommandBuffer& commandBuffer)
+{
+	commandBuffer.end();
+
+	vk::SubmitInfo submitInfo {
+		.commandBufferCount = 1,
+		.pCommandBuffers = &commandBuffer
+	};
+
+	context.graphicsQueue.submit(submitInfo, nullptr);
+	context.graphicsQueue.waitIdle();
 }

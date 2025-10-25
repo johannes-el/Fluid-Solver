@@ -1,5 +1,7 @@
+#include "vulkan/vk_context.hpp"
 #include "vulkan/vk_texture.hpp"
 #include "vulkan/vk_buffer.hpp"
+#include "vulkan/vk_image.hpp"
 #include "vulkan/vulkan.hpp"
 
 void createTextureImage(VkContext& context)
@@ -22,4 +24,11 @@ void createTextureImage(VkContext& context)
 	context.device.unmapMemory(stagingBufferMemory);
 
 	stbi_image_free(pixels);
+
+	createImage(context, texWidth, texHeight, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferDst
+		| vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, context.textureImage, context.textureImageMemory);
+
+	transitionImageLayout(context, context.textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+	copyBufferToImage(context, stagingBuffer, context.textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	transitionImageLayout(context, context.textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 }

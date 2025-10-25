@@ -88,6 +88,7 @@ void recreateSwapChain(VkContext& context)
 
 	createSwapChain(context);
 	createImageViews(context);
+	createDepthResources(context);
 }
 
 void cleanupSwapchain(VkContext& context)

@@ -26,6 +26,8 @@ add_library(imgui
     external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_vulkan.cpp
 )
+# === tinyobjloader ===
+add_subdirectory(external/tinyobjloader)
 
 # === VulkanMemoryAllocator ===
 add_library(vma STATIC
@@ -56,10 +58,10 @@ add_executable(VulkanApp
     src/vulkan/vk_pipeline.cpp
     src/vulkan/vk_command.cpp
     src/vulkan/vk_sync.cpp
-    src/vulkan/vk_vertex.cpp
     src/vulkan/vk_buffer.cpp
     src/vulkan/vk_descriptor.cpp
     src/vulkan/vk_texture.cpp
+    src/vulkan/vk_model.cpp
 
     # GUI integration
     src/gui/imgui.cpp
@@ -85,6 +87,7 @@ target_link_libraries(VulkanApp PRIVATE
     glfw
     imgui
     vma
+    tinyobjloader
 )
 
 # === Optional: Group folders in IDEs ===

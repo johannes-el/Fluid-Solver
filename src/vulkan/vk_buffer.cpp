@@ -3,6 +3,7 @@
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_vertex.hpp"
 #include "vulkan/vk_uniforms.hpp"
+#include "vulkan/vk_command.hpp"
 #include "vulkan/vulkan.hpp"
 #include <chrono>
 #include <glm/ext/matrix_clip_space.hpp>
@@ -54,43 +55,34 @@ void copyBuffer(VkContext& context,
                 vk::Buffer& dstBuffer,
                 vk::DeviceSize size)
 {
-	vk::CommandBufferAllocateInfo allocInfo {
-		.commandPool = context.commandPool,
-		.level = vk::CommandBufferLevel::ePrimary,
-		.commandBufferCount = 1
+	vk::CommandBuffer commandCopyBuffer = beginSingleTimeCommands(context);
+	commandCopyBuffer.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));
+	endSingleTimeCommands(context, commandCopyBuffer);
+}
+
+void copyBufferToImage(VkContext& context, const vk::Buffer& buffer, vk::Image& image, uint32_t width, uint32_t height)
+{
+	vk::CommandBuffer commandBuffer = beginSingleTimeCommands(context);
+	vk::BufferImageCopy region = {
+		.bufferOffset = 0,
+		.bufferRowLength = 0,
+		.bufferImageHeight = 0,
+		.imageSubresource = {
+			.aspectMask = vk::ImageAspectFlagBits::eColor,
+			.mipLevel = 0,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		},
+		.imageOffset = {0, 0, 0},
+		.imageExtent = {width, height, 1}
 	};
-
-	std::vector<vk::CommandBuffer> commandBuffers = context.device.allocateCommandBuffers(allocInfo);
-	vk::CommandBuffer commandBuffer = commandBuffers[0];
-
-	vk::CommandBufferBeginInfo beginInfo {
-		.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
-	};
-	commandBuffer.begin(beginInfo);
-
-	vk::BufferCopy copyRegion{ 0, 0, size };
-	commandBuffer.copyBuffer(srcBuffer, dstBuffer, 1, &copyRegion);
-
-	commandBuffer.end();
-
-	vk::SubmitInfo submitInfo{
-		.commandBufferCount = 1,
-		.pCommandBuffers = &commandBuffer
-	};
-
-	vk::Result result = context.graphicsQueue.submit(1, &submitInfo, nullptr);
-	if (result != vk::Result::eSuccess) {
-		throw std::runtime_error("Failed to submit command buffer to graphics queue!");
-	}
-
-	context.graphicsQueue.waitIdle();
-
-	context.device.freeCommandBuffers(context.commandPool, 1, &commandBuffer);
+	commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, {region});
+	endSingleTimeCommands(context, commandBuffer);
 }
 
 void createVertexBuffer(VkContext& context)
 {
-	vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+	vk::DeviceSize bufferSize = sizeof(context.vertices[0]) * context.vertices.size();
 
 	vk::BufferCreateInfo stagingInfo {
 		.size = bufferSize,
@@ -115,7 +107,7 @@ void createVertexBuffer(VkContext& context)
 	context.device.bindBufferMemory(stagingBuffer, stagingBufferMemory, 0);
 
 	void* dataStaging = context.device.mapMemory(stagingBufferMemory, 0, bufferSize);
-	memcpy(dataStaging, vertices.data(), (size_t)bufferSize);
+	memcpy(dataStaging, context.vertices.data(), (size_t)bufferSize);
 	context.device.unmapMemory(stagingBufferMemory);
 
 	vk::BufferCreateInfo bufferInfo {
@@ -147,7 +139,7 @@ void createVertexBuffer(VkContext& context)
 
 void createIndexBuffer(VkContext& context)
 {
-	vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+	vk::DeviceSize bufferSize = sizeof(context.indices[0]) * context.indices.size();
 
 	vk::Buffer stagingBuffer{};
 	vk::DeviceMemory stagingBufferMemory{};
@@ -162,7 +154,7 @@ void createIndexBuffer(VkContext& context)
 	);
 
 	void* data = context.device.mapMemory(stagingBufferMemory, 0, bufferSize);
-	memcpy(data, indices.data(), (size_t) bufferSize);
+	memcpy(data, context.indices.data(), (size_t) bufferSize);
 	context.device.unmapMemory(stagingBufferMemory);
 
 	createBuffer(context,
@@ -212,10 +204,17 @@ void updateUniformBuffer(VkContext& context, uint32_t currentImage)
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo{};
-	ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(context.swapChainExtent.width) / static_cast<float>(context.swapChainExtent.height), 0.1f, 10.0f);
 
+	float aspect = static_cast<float>(context.swapChainExtent.width) / static_cast<float>(context.swapChainExtent.height);
+
+	ubo.model = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+
+	ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
+                        glm::vec3(0.0f, 0.0f, 0.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+	ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 	ubo.proj[1][1] *= -1;
 
 	memcpy(context.uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));

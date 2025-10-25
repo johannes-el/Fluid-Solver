@@ -22,6 +22,7 @@
 #include "vulkan/vk_sync.hpp"
 #include "vulkan/vk_descriptor.hpp"
 #include "vulkan/vk_texture.hpp"
+#include "vulkan/vk_model.hpp"
 #include <cstdint>
 
 #define VMA_IMPLEMENTATION
@@ -59,7 +60,10 @@ void initVulkan(VkContext& context)
 	createDescriptorSetLayout(context);
 	createGraphicsPipeline(context);
 	createCommandPool(context);
+	createDepthResources(context);
 	createTextureImage(context);
+	createTextureImageView(context);
+	loadModel(context, "../models/batman.obj");
 	createVertexBuffer(context);
 	createIndexBuffer(context);
 	createUniformBuffers(context);
@@ -149,6 +153,9 @@ void run(VkContext& context)
 void cleanup(VkContext& context)
 {
 	context.device.waitIdle();
+
+	context.device.destroyImage(context.textureImage);
+	context.device.freeMemory(context.textureImageMemory);
 
 	context.device.destroyDescriptorSetLayout(context.descriptorSetLayout);
 	context.device.destroyDescriptorPool(context.descriptorPool);

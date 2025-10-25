@@ -9,6 +9,7 @@
 
 #include "vulkan/vk_pipeline.hpp"
 #include "vulkan/vk_vertex.hpp"
+#include "vulkan/vk_image.hpp"
 #include "FileIO.hpp"
 
 static std::vector<vk::DynamicState> dynamicStates = {
@@ -18,7 +19,7 @@ static std::vector<vk::DynamicState> dynamicStates = {
 
 [[nodiscard]] vk::ShaderModule createShaderModule(VkContext& context, const std::vector<char>& code) {
 	vk::ShaderModuleCreateInfo createInfo{};
-	createInfo.codeSize = code.size() * sizeof(char);
+	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	return context.device.createShaderModule(createInfo);
@@ -65,6 +66,14 @@ void createGraphicsPipeline(VkContext& context)
 		.pColorAttachmentFormats = &context.swapChainImageFormat
 	};
 
+	vk::PipelineDepthStencilStateCreateInfo depthStenctil {
+		.depthTestEnable = vk::True,
+		.depthWriteEnable = vk::True,
+		.depthCompareOp = vk::CompareOp::eLess,
+		.depthBoundsTestEnable = vk::False,
+		.stencilTestEnable = vk::False,
+	};
+
 	vk::PipelineViewportStateCreateInfo viewportState = vk::PipelineViewportStateCreateInfo{}
 		.setViewportCount(1)
 		.setScissorCount(1);
@@ -74,7 +83,7 @@ void createGraphicsPipeline(VkContext& context)
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = vk::PolygonMode::eFill;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
+	rasterizer.cullMode = vk::CullModeFlagBits::eNone;
 	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -103,25 +112,32 @@ void createGraphicsPipeline(VkContext& context)
 
 	context.pipelineLayout = context.device.createPipelineLayout(pipelineLayoutInfo);
 
-	vk::GraphicsPipelineCreateInfo pipelineInfo {
-		.pNext = &pipelineRenderingCreateInfo,
-		.stageCount = 2,
-		.pStages = shaderStages,
-		.pVertexInputState = &vertexInputInfo,
-		.pInputAssemblyState = &inputAssembly,
-		.pViewportState = &viewportState,
-		.pRasterizationState = &rasterizer,
-		.pMultisampleState = &multisampling,
-		.pColorBlendState = &colorBlending,
-		.pDynamicState = &dynamicState,
-		.layout = context.pipelineLayout,
-		.renderPass = nullptr
+	vk::Format depthFormat = findDepthFormat(context);
+
+	vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain = {
+		{
+			.pNext = &pipelineRenderingCreateInfo,
+			.stageCount = 2,
+			.pStages = shaderStages,
+			.pVertexInputState = &vertexInputInfo,
+			.pInputAssemblyState = &inputAssembly,
+			.pViewportState = &viewportState,
+			.pRasterizationState = &rasterizer,
+			.pMultisampleState = &multisampling,
+			.pDepthStencilState = &depthStenctil,
+			.pColorBlendState = &colorBlending,
+			.pDynamicState = &dynamicState,
+			.layout = context.pipelineLayout,
+			.renderPass = nullptr
+		},
+		{
+			.colorAttachmentCount = 1,
+			.pColorAttachmentFormats = &context.swapChainSurfaceFormat.format,
+			.depthAttachmentFormat = depthFormat
+		}
 	};
 
-	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-	pipelineInfo.basePipelineIndex = -1;
-
-	auto [result, pipeline] = context.device.createGraphicsPipeline(nullptr, pipelineInfo);
+	auto [result, pipeline] = context.device.createGraphicsPipeline(nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 
 	if (result != vk::Result::eSuccess) {
 		throw std::runtime_error("Failed to create graphics pipeline!");

@@ -14,3 +14,6 @@
 void createCommandPool(VkContext& context);
 void createCommandBuffers(VkContext& context);
 void recordCommandBuffer(VkContext& context, uint32_t imageIndex);
+
+vk::CommandBuffer beginSingleTimeCommands(VkContext& context);
+void endSingleTimeCommands(VkContext& context, vk::CommandBuffer& commandBuffer);
