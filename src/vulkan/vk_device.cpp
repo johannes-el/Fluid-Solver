@@ -96,6 +96,16 @@ void createDevice(VkContext& context)
 	vk::PhysicalDeviceVulkan11Features vulkan11Features{};
 	vk::PhysicalDeviceVulkan13Features vulkan13Features{};
 	vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
+	vk::PhysicalDeviceFeatures2 enabledFeatures{};
+
+	context.gpu.getFeatures2(&enabledFeatures);
+
+	if (enabledFeatures.features.samplerAnisotropy) {
+		enabledFeatures.features.samplerAnisotropy = VK_TRUE;
+	}
+	else {
+		throw std::runtime_error("Anisotropic filtering not supported!");
+	}
 
 	vulkan11Features.shaderDrawParameters = vk::True;
 	vulkan13Features.dynamicRendering = vk::True;
@@ -104,7 +114,7 @@ void createDevice(VkContext& context)
 
 	vulkan13Features.pNext = &extendedDynamicStateFeatures;
 	vulkan11Features.pNext = &vulkan13Features;
-	features.pNext = &vulkan11Features;
+	enabledFeatures.pNext = &vulkan11Features;
 
 	float                     queuePriority = 0.0f;
 	vk::DeviceQueueCreateInfo deviceQueueCreateInfo {
@@ -113,14 +123,13 @@ void createDevice(VkContext& context)
 		.pQueuePriorities = &queuePriority
 	};
 
-	vk::DeviceCreateInfo      deviceCreateInfo{
-		.pNext =  &features,
+	vk::DeviceCreateInfo      deviceCreateInfo {
+		.pNext =  &enabledFeatures,
 		.queueCreateInfoCount = 1,
-		.pQueueCreateInfos = &deviceQueueCreateInfo
+		.pQueueCreateInfos = &deviceQueueCreateInfo,
+		.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
+		.ppEnabledExtensionNames = deviceExtensions.data()
 	};
-
-	deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
-	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 	context.graphicsFamily = graphicsIndex;
 	context.presentFamily  = presentIndex;

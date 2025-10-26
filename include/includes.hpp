@@ -21,6 +21,7 @@
 #include <map>
 #include <utility>
 #include <chrono>
+#include <thread>
 
 // === Third-party Libraries === //
 #include "stb_image.h"

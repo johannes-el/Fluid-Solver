@@ -76,6 +76,7 @@ struct VkContext {
 
 	vk::Image textureImage = nullptr;
 	vk::ImageView textureImageView = nullptr;
+	vk::Sampler textureSampler = nullptr;
 	vk::DeviceMemory textureImageMemory = nullptr;
 
 	vk::Image depthImage = nullptr;

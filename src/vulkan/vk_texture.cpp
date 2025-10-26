@@ -7,7 +7,7 @@
 void createTextureImage(VkContext& context)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load("../textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("../models/textures/mrletsgo_Albedo.tga.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels) {
@@ -31,4 +31,25 @@ void createTextureImage(VkContext& context)
 	transitionImageLayout(context, context.textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 	copyBufferToImage(context, stagingBuffer, context.textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 	transitionImageLayout(context, context.textureImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+}
+
+
+void createTextureSampler(VkContext& context)
+{
+	vk::PhysicalDeviceProperties properties = context.gpu.getProperties();
+
+	vk::SamplerCreateInfo samplerInfo {
+		.magFilter = vk::Filter::eLinear,
+		.minFilter = vk::Filter::eLinear,
+		.mipmapMode = vk::SamplerMipmapMode::eLinear,
+		.addressModeU = vk::SamplerAddressMode::eRepeat,
+		.addressModeV = vk::SamplerAddressMode::eRepeat,
+		.addressModeW = vk::SamplerAddressMode::eRepeat,
+		.anisotropyEnable = vk::True,
+		.maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+		.compareEnable = vk::False,
+		.compareOp = vk::CompareOp::eAlways
+	};
+
+	context.textureSampler = context.device.createSampler(samplerInfo);
 }

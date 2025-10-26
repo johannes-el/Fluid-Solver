@@ -63,7 +63,8 @@ void initVulkan(VkContext& context)
 	createDepthResources(context);
 	createTextureImage(context);
 	createTextureImageView(context);
-	loadModel(context, "../models/batman.obj");
+	createTextureSampler(context);
+	loadModel(context, "../models/source/mrletsgo.obj");
 	createVertexBuffer(context);
 	createIndexBuffer(context);
 	createUniformBuffers(context);
@@ -140,15 +141,27 @@ void drawFrame(VkContext& context) {
 	context.currentFrame = (context.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-
 void run(VkContext& context)
 {
+	using clock = std::chrono::high_resolution_clock;
+	auto lastTime = clock::now();
+	const auto frameDuration = std::chrono::milliseconds(16); // ~60 FPS
+
 	while (!glfwWindowShouldClose(context.window)) {
 		glfwPollEvents();
 		drawFrame(context);
+
+		auto now = clock::now();
+		auto elapsed = now - lastTime;
+		if (elapsed < frameDuration) {
+			std::this_thread::sleep_for(frameDuration - elapsed);
+		}
+		lastTime = clock::now();
 	}
+
 	context.device.waitIdle();
 }
+
 
 void cleanup(VkContext& context)
 {

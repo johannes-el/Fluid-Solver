@@ -207,7 +207,8 @@ void updateUniformBuffer(VkContext& context, uint32_t currentImage)
 
 	float aspect = static_cast<float>(context.swapChainExtent.width) / static_cast<float>(context.swapChainExtent.height);
 
-	ubo.model = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+	ubo.model = glm::mat4(1.0f);
+	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
                         glm::vec3(0.0f, 0.0f, 0.0f),

@@ -128,9 +128,21 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 		)
 	);
         context.commandBuffers[context.currentFrame].setScissor( 0, vk::Rect2D( vk::Offset2D(0, 0), context.swapChainExtent));
-	context.commandBuffers[context.currentFrame].bindVertexBuffers(0, context.vertexBuffer, {0});
+	vk::Buffer vertexBuffers[] = { context.vertexBuffer };
+	vk::DeviceSize offsets[] = { 0 };
+	context.commandBuffers[context.currentFrame].bindVertexBuffers(0, 1, vertexBuffers, offsets);
+
 	context.commandBuffers[context.currentFrame].bindIndexBuffer(context.indexBuffer, 0, vk::IndexType::eUint32);
-	context.commandBuffers[context.currentFrame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.pipelineLayout, 0, context.descriptorSets[context.currentFrame], nullptr);
+	context.commandBuffers[context.currentFrame].bindDescriptorSets(
+		vk::PipelineBindPoint::eGraphics,
+		context.pipelineLayout,
+		0,
+		1,
+		&context.descriptorSets[context.currentFrame],
+		0,
+		nullptr
+	);
+
         context.commandBuffers[context.currentFrame].drawIndexed(context.indices.size(), 1, 0, 0, 0);
         context.commandBuffers[context.currentFrame].endRendering();
 
