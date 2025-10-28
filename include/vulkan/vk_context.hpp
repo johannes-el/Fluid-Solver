@@ -14,6 +14,7 @@
 #include <vulkan/vulkan_handles.hpp>
 #include "vk_mem_alloc.h"
 #include "vulkan/vk_vertex.hpp"
+#include "gui/imgui.hpp"
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -72,6 +73,8 @@ struct VkContext {
 	std::vector<void*> uniformBuffersMapped;
 
 	vk::DescriptorPool descriptorPool      = nullptr;
+	vk::DescriptorPool imguiPool;
+
 	std::vector<vk::DescriptorSet> descriptorSets;
 
 	vk::Image textureImage = nullptr;
@@ -82,6 +85,7 @@ struct VkContext {
 	vk::Image depthImage = nullptr;
 	vk::DeviceMemory depthImageMemory = nullptr;
 	vk::ImageView depthImageView = nullptr;
+	ImGuiVulkanUtil imGui;
 };
 
 void initWindow(VkContext& context, AppConfig& config);

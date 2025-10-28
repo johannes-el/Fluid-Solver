@@ -7,6 +7,7 @@
  * Full license: https://creativecommons.org/licenses/by-nc/4.0/legalcode
  */
 
+#include "imgui.h"
 #include "includes.hpp"
 
 #include "app_config.hpp"
@@ -64,7 +65,7 @@ void initVulkan(VkContext& context)
 	createTextureImage(context);
 	createTextureImageView(context);
 	createTextureSampler(context);
-	loadModel(context, "../models/source/mrletsgo.obj");
+	loadModel(context, "../models/avocado/Avocado.gltf");
 	createVertexBuffer(context);
 	createIndexBuffer(context);
 	createUniformBuffers(context);
@@ -74,8 +75,8 @@ void initVulkan(VkContext& context)
 	createSyncObjects(context);
 }
 
-void drawFrame(VkContext& context) {
-
+void drawFrame(VkContext& context)
+{
 	vk::Result waitResult = context.device.waitForFences(
 		{ context.inFlightFences[context.currentFrame] },
 		true,
@@ -100,6 +101,10 @@ void drawFrame(VkContext& context) {
         if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
         }
+
+	if (context.imGui.newFrame()) {
+		context.imGui.updateBuffers();
+	}
 
 	updateUniformBuffer(context, context.currentFrame);
 

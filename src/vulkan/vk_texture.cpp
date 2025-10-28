@@ -1,3 +1,5 @@
+#include "stb_image.h"
+
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_texture.hpp"
 #include "vulkan/vk_buffer.hpp"
@@ -7,7 +9,7 @@
 void createTextureImage(VkContext& context)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load("../models/textures/mrletsgo_Albedo.tga.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("../models/avocado/Avocado_baseColor.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels) {

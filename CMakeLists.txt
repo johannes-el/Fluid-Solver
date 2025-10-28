@@ -29,6 +29,10 @@ add_library(imgui
 # === tinyobjloader ===
 add_subdirectory(external/tinyobjloader)
 
+add_library(tinygltf INTERFACE)
+target_include_directories(tinygltf INTERFACE external/tinygltf)
+target_compile_definitions(tinygltf INTERFACE TINYGLTF_NO_STB)
+
 # === VulkanMemoryAllocator ===
 add_library(vma STATIC
     external/VulkanMemoryAllocator/src/VmaUsage.cpp
@@ -48,6 +52,7 @@ add_executable(VulkanApp
     src/main.cpp
     src/FileIO.cpp
     src/stb_image.cpp
+    src/stb_image_write.cpp
 
     # Vulkan modules
     src/vulkan/vk_context.cpp
@@ -87,7 +92,8 @@ target_link_libraries(VulkanApp PRIVATE
     glfw
     imgui
     vma
-    tinyobjloader
+    tinygltf
+    X11
 )
 
 # === Optional: Group folders in IDEs ===
@@ -95,6 +101,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source" FILES
     src/main.cpp
     src/FileIO.cpp
     src/stb_image.cpp
+    src/stb_image_write.cpp
     src/vulkan/vk_context.cpp
     src/vulkan/vk_instance.cpp
     src/vulkan/vk_device.cpp

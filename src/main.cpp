@@ -16,6 +16,7 @@
 */
 //////////////////////////////////////////////////////////////////////////
 
+#include "imgui_impl_vulkan.h"
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_instance.hpp"
 #include "gui/imgui.hpp"
@@ -74,7 +75,15 @@ int main(int argc, char** argv)
 	VkContext context{};
 	initWindow(context, config);
 	initVulkan(context);
-	initImGUI(context);
+
+	context.imGui = ImGuiVulkanUtil(
+		context.device,
+		context.gpu,
+		context.graphicsQueue,
+		context.graphicsFamily.value_or(0));
+
+	context.imGui.init(context, context.swapChainExtent.width, context.swapChainExtent.height);
+	context.imGui.initResources();
 
 	run(context);
 

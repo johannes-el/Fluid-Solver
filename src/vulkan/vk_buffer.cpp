@@ -30,7 +30,7 @@ void createBuffer(VkContext& context,
 		vk::Buffer& buffer,
 		vk::DeviceMemory& bufferMemory)
 {
-	vk::BufferCreateInfo bufferInfo{
+	vk::BufferCreateInfo bufferInfo {
 		.size = size,
 		.usage = usage,
 		.sharingMode = vk::SharingMode::eExclusive
@@ -41,7 +41,7 @@ void createBuffer(VkContext& context,
 
 	uint32_t memoryTypeIndex = findMemoryType(context, memRequirements.memoryTypeBits, properties);
 
-	vk::MemoryAllocateInfo allocInfo{
+	vk::MemoryAllocateInfo allocInfo {
 		.allocationSize = memRequirements.size,
 		.memoryTypeIndex = memoryTypeIndex
 	};
@@ -98,7 +98,7 @@ void createVertexBuffer(VkContext& context)
 		memRequirementsStaging.memoryTypeBits,
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	);
-	vk::MemoryAllocateInfo memoryAllocateInfoStaging{
+	vk::MemoryAllocateInfo memoryAllocateInfoStaging {
 		.allocationSize = memRequirementsStaging.size,
 		.memoryTypeIndex = stagingMemTypeIndex
 	};
@@ -207,10 +207,13 @@ void updateUniformBuffer(VkContext& context, uint32_t currentImage)
 
 	float aspect = static_cast<float>(context.swapChainExtent.width) / static_cast<float>(context.swapChainExtent.height);
 
-	ubo.model = glm::mat4(1.0f);
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f));
+	model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f),
+	ubo.model = model;
+
+	ubo.view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f),
                         glm::vec3(0.0f, 0.0f, 0.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
