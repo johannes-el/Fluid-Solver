@@ -45,6 +45,7 @@ void ImGuiVulkanUtil::init(VkContext& context, float width, float height)
 	pool_info.pPoolSizes = pool_sizes;
 
 	descriptorPool = device.createDescriptorPool(pool_info);
+	context.imguiPool = descriptorPool;
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

@@ -213,8 +213,8 @@ void updateUniformBuffer(VkContext& context, uint32_t currentImage)
 
 	ubo.model = model;
 
-	ubo.view = glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f),
-                        glm::vec3(0.0f, 0.0f, 0.0f),
+	ubo.view = glm::lookAt(glm::vec3(0.0f, 0.5f, 1.0f),
+                        glm::vec3(0.0f, 0.2f, 0.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
 

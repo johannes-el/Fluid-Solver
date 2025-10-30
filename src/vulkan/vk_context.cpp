@@ -188,27 +188,22 @@ void cleanup(VkContext& context)
 	if (context.depthImageMemory) context.device.freeMemory(context.depthImageMemory);
 
 	if (context.textureSampler) context.device.destroySampler(context.textureSampler);
+	if (context.textureImageView) context.device.destroyImageView(context.textureImageView);
+	if (context.textureImage) context.device.destroyImage(context.textureImage);
+	if (context.textureImageMemory) context.device.freeMemory(context.textureImageMemory);
 
 	if (context.imguiPool) context.device.destroyDescriptorPool(context.imguiPool);
 
-	context.device.destroyImage(context.textureImage);
-	context.device.freeMemory(context.textureImageMemory);
-
-	context.device.destroyDescriptorSetLayout(context.descriptorSetLayout);
-	context.device.destroyDescriptorPool(context.descriptorPool);
+	if (context.descriptorSetLayout) context.device.destroyDescriptorSetLayout(context.descriptorSetLayout);
+	if (context.descriptorPool) context.device.destroyDescriptorPool(context.descriptorPool);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (context.uniformBuffersMapped[i]) {
 			context.device.unmapMemory(context.uniformBuffersMemory[i]);
 		}
-
 		context.device.destroyBuffer(context.uniformBuffers[i]);
 		context.device.freeMemory(context.uniformBuffersMemory[i]);
 	}
-
-	context.uniformBuffers.clear();
-	context.uniformBuffersMemory.clear();
-	context.uniformBuffersMapped.clear();
 
 	context.device.destroyBuffer(context.vertexBuffer);
 	context.device.freeMemory(context.vertexBufferMemory);
@@ -216,43 +211,35 @@ void cleanup(VkContext& context)
 	context.device.destroyBuffer(context.indexBuffer);
 	context.device.freeMemory(context.indexBufferMemory);
 
-	for (auto& semaphore : context.renderFinishedSemaphores) {
+	for (auto& semaphore : context.renderFinishedSemaphores)
 		context.device.destroySemaphore(semaphore);
-	}
-	for (auto& semaphore : context.presentCompleteSemaphores) {
+	for (auto& semaphore : context.presentCompleteSemaphores)
 		context.device.destroySemaphore(semaphore);
-	}
-	for (auto& fence : context.inFlightFences) {
+	for (auto& fence : context.inFlightFences)
 		context.device.destroyFence(fence);
-	}
 
 	context.device.destroyCommandPool(context.commandPool);
 	context.device.destroyPipeline(context.graphicsPipeline);
 	context.device.destroyPipelineLayout(context.pipelineLayout);
-
 	context.device.destroyShaderModule(context.shaderModule);
 
-	for (auto& imageView : context.swapChainImageViews) {
+	for (auto& imageView : context.swapChainImageViews)
 		context.device.destroyImageView(imageView);
-	}
 
 	context.swapChainImageViews.clear();
 	context.device.destroySwapchainKHR(context.swapChain);
 	context.swapChainImages.clear();
-	context.device.destroy();
 
+	context.device.destroy();
 	context.instance.destroySurfaceKHR(context.surface);
 
 	if (enableValidationLayers && context.debugCallback != VK_NULL_HANDLE) {
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
-			context.instance, "vkDestroyDebugUtilsMessengerEXT");
-		if (func) {
-			func(context.instance, context.debugCallback, nullptr);
-		}
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
+			vkGetInstanceProcAddr(context.instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func) func(context.instance, context.debugCallback, nullptr);
 	}
 
 	context.instance.destroy();
-
 	glfwDestroyWindow(context.window);
 	glfwTerminate();
 }
