@@ -8,6 +8,7 @@
 
 class ImGuiVulkanUtil {
 public:
+	ImGuiVulkanUtil() = default;
 	ImGuiVulkanUtil(vk::Device& device, vk::PhysicalDevice physialDevice,
 			vk::Queue& graphicsQueue, uint32_t graphicsQueueFamily);
 

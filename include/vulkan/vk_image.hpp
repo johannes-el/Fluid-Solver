@@ -9,7 +9,9 @@
 
 #pragma once
 
-#include "vk_context.hpp"
+#include "includes.hpp"
+
+class VkContext;
 
 vk::ImageView createImageView(VkContext& context, vk::Image& image, vk::Format format, vk::ImageAspectFlags aspectFlags);
 void createImageViews(VkContext& context);

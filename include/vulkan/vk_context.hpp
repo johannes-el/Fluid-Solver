@@ -14,7 +14,8 @@
 #include <vulkan/vulkan_handles.hpp>
 #include "vk_mem_alloc.h"
 #include "vulkan/vk_vertex.hpp"
-#include "gui/imgui.hpp"
+
+class ImGuiVulkanUtil;
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -85,7 +86,7 @@ struct VkContext {
 	vk::Image depthImage = nullptr;
 	vk::DeviceMemory depthImageMemory = nullptr;
 	vk::ImageView depthImageView = nullptr;
-	ImGuiVulkanUtil imGui;
+	std::unique_ptr<ImGuiVulkanUtil> imGui;
 };
 
 void initWindow(VkContext& context, AppConfig& config);

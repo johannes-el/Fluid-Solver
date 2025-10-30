@@ -8,10 +8,12 @@
  */
 
 #include "vulkan/vk_command.hpp"
+#include "imgui.h"
 #include "vulkan/vk_context.hpp"
 #include "vulkan/vk_vertex.hpp"
 #include "vulkan/vulkan.hpp"
 #include <vulkan/vulkan_structs.hpp>
+#include "gui/imgui.hpp"
 
 void createCommandPool(VkContext& context)
 {
@@ -144,6 +146,9 @@ void recordCommandBuffer(VkContext& context, uint32_t imageIndex)
 	);
 
         context.commandBuffers[context.currentFrame].drawIndexed(context.indices.size(), 1, 0, 0, 0);
+
+	context.imGui->drawFrame(context.commandBuffers[context.currentFrame]);
+
         context.commandBuffers[context.currentFrame].endRendering();
 
 	transition_image_layout(

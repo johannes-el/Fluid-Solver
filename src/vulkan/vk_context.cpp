@@ -24,6 +24,8 @@
 #include "vulkan/vk_descriptor.hpp"
 #include "vulkan/vk_texture.hpp"
 #include "vulkan/vk_model.hpp"
+
+#include "gui/imgui.hpp"
 #include <cstdint>
 
 #define VMA_IMPLEMENTATION
@@ -102,9 +104,12 @@ void drawFrame(VkContext& context)
 		throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-	if (context.imGui.newFrame()) {
-		context.imGui.updateBuffers();
+	if (context.imGui->newFrame()) {
+		context.imGui->updateBuffers();
 	}
+
+	context.imGui->newFrame();
+	context.imGui->updateBuffers();
 
 	updateUniformBuffer(context, context.currentFrame);
 
@@ -171,6 +176,20 @@ void run(VkContext& context)
 void cleanup(VkContext& context)
 {
 	context.device.waitIdle();
+
+	if (context.imGui) {
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
+
+	if (context.depthImageView) context.device.destroyImageView(context.depthImageView);
+	if (context.depthImage) context.device.destroyImage(context.depthImage);
+	if (context.depthImageMemory) context.device.freeMemory(context.depthImageMemory);
+
+	if (context.textureSampler) context.device.destroySampler(context.textureSampler);
+
+	if (context.imguiPool) context.device.destroyDescriptorPool(context.imguiPool);
 
 	context.device.destroyImage(context.textureImage);
 	context.device.freeMemory(context.textureImageMemory);

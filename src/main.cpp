@@ -72,18 +72,18 @@ int main(int argc, char** argv)
 	std::filesystem::path background_music = "../res/Sounds/8-bit.mp3";
 	Audio::playMusic(audioContext, background_music, true);
 
-	VkContext context{};
+	VkContext context;
 	initWindow(context, config);
 	initVulkan(context);
 
-	context.imGui = ImGuiVulkanUtil(
+	context.imGui = std::make_unique<ImGuiVulkanUtil>(
 		context.device,
 		context.gpu,
 		context.graphicsQueue,
 		context.graphicsFamily.value_or(0));
 
-	context.imGui.init(context, context.swapChainExtent.width, context.swapChainExtent.height);
-	context.imGui.initResources();
+	context.imGui->init(context, context.swapChainExtent.width, context.swapChainExtent.height);
+	context.imGui->initResources();
 
 	run(context);
 

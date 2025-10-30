@@ -5,7 +5,7 @@
 #ifdef NDEBUG
 inline constexpr bool enableValidationLayers = false;
 #else
-inline constexpr bool enableValidationLayers = false;
+inline constexpr bool enableValidationLayers = true;
 #endif
 
 void createSurface(VkContext& context);
