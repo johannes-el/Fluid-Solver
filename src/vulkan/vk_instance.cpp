@@ -50,7 +50,7 @@ void setupValidationLayers(VkContext& vkContext)
 {
 	if (!enableValidationLayers) return;
 
-	vk::DebugUtilsMessengerCreateInfoEXT createInfo{
+	vk::DebugUtilsMessengerCreateInfoEXT createInfo {
 		.messageSeverity =
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
 			vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,

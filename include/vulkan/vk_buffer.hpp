@@ -19,5 +19,3 @@ void copyBufferToImage(VkContext& context, const vk::Buffer& buffer, vk::Image& 
 void createVertexBuffer(VkContext& context);
 void createIndexBuffer(VkContext& context);
 void createUniformBuffers(VkContext& context);
-
-void updateUniformBuffer(VkContext& context, uint32_t currentImage);

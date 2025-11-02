@@ -1,7 +1,7 @@
 #include "includes.hpp"
 #include "vulkan/vk_descriptor.hpp"
 #include "vulkan/vk_context.hpp"
-#include "vulkan/vk_uniforms.hpp"
+#include "scene/uniforms.hpp"
 #include <vulkan/vulkan_structs.hpp>
 
 void createDescriptorSetLayout(VkContext& context)

@@ -1,4 +1,5 @@
 #include "gui/imgui.hpp"
+#include "scene/uniforms.hpp"
 #include "vulkan/vk_command.hpp"
 
 #include "imgui.h"
@@ -51,6 +52,8 @@ void ImGuiVulkanUtil::init(VkContext& context, float width, float height)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	ImGui_ImplGlfw_InitForVulkan(context.window, true);
 
 	VkPipelineRenderingCreateInfoKHR pipelineRendering{};
@@ -88,7 +91,7 @@ void ImGuiVulkanUtil::init(VkContext& context, float width, float height)
 	vulkanStyle.Colors[ImGuiCol_Header] = ImVec4(1.0f,0.0f,0.0f,0.4f);
 	vulkanStyle.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f,1.0f,0.0f,1.0f);
 
-	setStyle(0);
+	setStyle(1);
 }
 
 
@@ -104,7 +107,9 @@ void ImGuiVulkanUtil::setStyle(uint32_t index)
 	}
 }
 
-void ImGuiVulkanUtil::initResources() {}
+void ImGuiVulkanUtil::initResources()
+{
+}
 
 bool ImGuiVulkanUtil::newFrame()
 {
@@ -112,9 +117,34 @@ bool ImGuiVulkanUtil::newFrame()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::Begin("Vulkan ImGui Demo");
-	ImGui::Text("");
+	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+	ImGui::Begin("Transformations");
+
+	ImGui::SliderFloat("Scale", &UniformBufferObject::Scale, 0.0f, 1.0f);
+
+	ImGui::ShowDemoWindow();
+
+	if (ImGui::Button("Screenshot")) {
+
+	}
+
 	ImGui::End();
+
+
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Open")) {
+
+			}
+			if (ImGui::MenuItem("Save")) {
+
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+}
+
 
 	ImGui::Render();
 	return true;

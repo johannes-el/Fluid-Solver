@@ -1,10 +1,10 @@
 #pragma once
 
+#include <imgui.h>
+
 #include "includes.hpp"
 #include "vulkan/vk_context.hpp"
-#include "vulkan/vulkan.hpp"
-#include <imgui.h>
-#include <vulkan/vk_image.hpp>
+#include "vulkan/vk_image.hpp"
 
 class ImGuiVulkanUtil {
 public:

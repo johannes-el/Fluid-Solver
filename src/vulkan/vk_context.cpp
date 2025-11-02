@@ -25,6 +25,8 @@
 #include "vulkan/vk_texture.hpp"
 #include "vulkan/vk_model.hpp"
 
+#include "scene/uniforms.hpp"
+
 #include "gui/imgui.hpp"
 #include <cstdint>
 
@@ -67,7 +69,7 @@ void initVulkan(VkContext& context)
 	createTextureImage(context);
 	createTextureImageView(context);
 	createTextureSampler(context);
-	loadModel(context, "../models/avocado/Avocado.gltf");
+	loadModel(context, "../models/dragon/scene.gltf");
 	createVertexBuffer(context);
 	createIndexBuffer(context);
 	createUniformBuffers(context);
@@ -104,14 +106,10 @@ void drawFrame(VkContext& context)
 		throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-	if (context.imGui->newFrame()) {
-		context.imGui->updateBuffers();
-	}
-
 	context.imGui->newFrame();
 	context.imGui->updateBuffers();
 
-	updateUniformBuffer(context, context.currentFrame);
+	UniformBufferObject::updateUniformBuffer(context, context.currentFrame);
 
         context.device.resetFences(context.inFlightFences[context.currentFrame]);
         context.commandBuffers[context.currentFrame].reset();

@@ -7,22 +7,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# === Paths ===
 include_directories(include)
 
-# === Find Vulkan ===
 find_package(Vulkan REQUIRED)
 
-# === Optional: Find GLFW system-wide ===
 find_package(glfw3 3.3 REQUIRED)
 
-# === ImGui ===
 add_library(imgui
     external/imgui/imgui.cpp
     external/imgui/imgui_draw.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
-    external/imgui/imgui_demo.cpp # optional but helpful for testing
+    external/imgui/imgui_demo.cpp
     external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_vulkan.cpp
 )
@@ -47,12 +43,15 @@ target_include_directories(imgui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
 )
 
-# === VulkanApp Executable ===
 add_executable(VulkanApp
     src/main.cpp
     src/FileIO.cpp
-    src/stb_image.cpp
-    src/stb_image_write.cpp
+
+    src/stb/stb_image.cpp
+    src/stb/stb_image_write.cpp
+    src/scene/camera.cpp
+    # src/scene/particle.cpp
+    src/scene/uniforms.cpp
 
     # Vulkan modules
     src/vulkan/vk_context.cpp
@@ -67,6 +66,7 @@ add_executable(VulkanApp
     src/vulkan/vk_descriptor.cpp
     src/vulkan/vk_texture.cpp
     src/vulkan/vk_model.cpp
+    src/vulkan/vk_text_overlay.cpp
 
     # GUI integration
     src/gui/imgui.cpp
@@ -96,7 +96,6 @@ target_link_libraries(VulkanApp PRIVATE
     X11
 )
 
-# === Optional: Group folders in IDEs ===
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source" FILES
     src/main.cpp
     src/FileIO.cpp

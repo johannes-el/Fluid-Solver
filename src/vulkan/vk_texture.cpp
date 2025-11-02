@@ -9,7 +9,7 @@
 void createTextureImage(VkContext& context)
 {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load("../models/avocado/Avocado_baseColor.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load("../models/dragon/textures/DefaultMaterial_baseColor.jpeg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels) {

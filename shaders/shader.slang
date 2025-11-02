@@ -8,6 +8,10 @@ struct UniformBuffer {
        float4x4 model;
        float4x4 view;
        float4x4 proj;
+
+       float3 lightPos;
+       float3 lightColor;
+       float3 objectColor;
 };
 
 ConstantBuffer<UniformBuffer> ubo;
@@ -31,5 +35,9 @@ Sampler2D texture;
 
 [shader("fragment")]
 float4 fragMain(VSOutput vertIn) : SV_Target {
+       // float4 color = texture.Sample(vertIn.fragTexCoord);
+       // float3 result = color.rgb * ubo.lightColor;
+       // return float4(result, color.a);
+
        return texture.Sample(vertIn.fragTexCoord);
 }
